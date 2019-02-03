@@ -5,6 +5,6 @@
     - "{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family }}.yml"
 
-- include: repository.yml
-- include: installation.yml
-- include: configuration.yml
+- include_tasks: repository.yml
+- include_tasks: installation.yml
+- include_tasks: configuration.yml
