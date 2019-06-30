@@ -1,17 +1,20 @@
 # {{ ansible_managed }}
 
 user              {{ nginx_user }};
-worker_processes  1;
+worker_processes  {{ nginx_worker_processes }};
 
 error_log  /var/log/nginx/error.log;
 pid        /var/run/nginx.pid;
 
 events {
-    worker_connections  1024;
+    worker_connections  {{ nginx_worker_connections }};
 }
 
 http {
+    server_names_hash_bucket_size {{ nginx_server_names_hash_bucket_size }};
     include       /etc/nginx/mime.types;
+    include    /etc/nginx/proxy.conf;
+    index    index.html index.htm index.php;
     default_type  application/octet-stream;
 
     log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
@@ -21,12 +24,9 @@ http {
     access_log  /var/log/nginx/access.log  main;
 
     sendfile        on;
-    #tcp_nopush     on;
-
-    #keepalive_timeout  0;
+    tcp_nopush     on;
     keepalive_timeout  65;
+    gzip  on;
 
-    #gzip  on;
-    
-    include {{ nginx_cfg_dir }}/*.conf;
+    include {{ nginx_cfg_dir }}/*;
 }
