@@ -79,3 +79,28 @@
   service:
     name: nginx
     state: restarted
+
+- name: "[NGINX] :: Copy Fail2Ban Filters"
+  copy:
+    src: "fail2ban/filter.d/{{ item }}"
+    dest: "/etc/fail2ban/filter.d/{{ item }}"
+  with_items:
+    - nginx-404.conf
+    - nginx-badbots.conf
+    - nginx-nohome.conf
+    - nginx-noscript.conf
+  notify: restart fail2ban
+
+- name: "[NGINX] :: Copy Fail2Ban Jail Config"
+  copy:
+    src: "fail2ban/jail.d/custom.conf"
+    dest: "/etc/fail2ban/jail.d/custom.conf"
+  notify: restart fail2ban
+
+- name: "[NGINX] :: Set Fail2Ban Ignore IPs"
+  lineinfile:
+    regexp: '^ignoreip.*$'
+    insertafter: '^#.*ignoreip.*$'
+    line: 'ignoreip = 10.0.0.0/8'
+    path: "/etc/fail2ban/jail.conf"
+  notify: restart fail2ban
