@@ -9,3 +9,13 @@
   service:
     name: nginx
     enabled: yes
+
+- name: install fail2ban
+  package:
+    name: fail2ban
+    state: present
+
+- name: enable fail2ban service
+  service:
+    name: fail2ban
+    enabled: yes
