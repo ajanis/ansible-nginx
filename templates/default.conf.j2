@@ -1,6 +1,7 @@
+# {{ ansible_managed }}
+
 {% for vhost in nginx_vhosts %}
 server {
-
     listen {{ vhost.serverlisten }};
 {% if vhost.serveralias is defined %}
     server_name {{ vhost.servername }} {{ vhost.serveralias }};
@@ -8,7 +9,7 @@ server {
     server_name {{ vhost.servername }};
 {% endif %}
 
-    access_log      /var/log/nginx/{{ vhost.servername }}_access.log;
+    access_log      /var/log/nginx/{{ vhost.servername }}_access.log main;
     error_log       /var/log/nginx/{{ vhost.servername }}_error.log warn;
 
     location / {
@@ -21,16 +22,18 @@ server {
     {{ vhost.extra_parameters }}
 {% endif %}
 
-{% if vhost.proxy %}
-    proxy_set_header          Host $host;
-    proxy_set_header          Accept-Encoding "";
-    proxy_set_header          X-Real-IP $remote_addr;
-    proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header          X-Forwarded-Proto $scheme;
-    proxy_buffering on;
-    proxy_pass                http://{{ vhost.proxy.ip }}:{{ vhost.proxy.port }};
-    proxy_read_timeout        90;
-    proxy_redirect            http://{{ vhost.proxy.ip}}:{{ vhost.proxy.port }} http://$server_name;
+{% if vhost.proxy is defined and vhost.proxy %}
+    include /etc/nginx/proxy.conf;
+    proxy_pass                http://{{ vhost.proxy_ip }}:{{ vhost.proxy_port }};
+    proxy_redirect            http://{{ vhost.proxy_ip}}:{{ vhost.proxy_port }} http://$server_name;
+{% if vhost.custom_css is defined %}
+    proxy_set_header Accept-Encoding "";
+    sub_filter
+    '</head>'
+    '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ vhost.custom_css }}">
+    </head>';
+    sub_filter_once on;
+{% endif %}
 {% endif %}
 
     }

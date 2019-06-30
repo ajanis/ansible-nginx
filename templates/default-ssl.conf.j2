@@ -1,7 +1,8 @@
+# {{ ansible_managed }}
+
 {% for vhost in nginx_vhosts_ssl %}
 server {
-
-    listen {{ vhost.serverlisten }};
+    listen {{ vhost.serverlisten }} ssl http2;
 {% if vhost.serveralias is defined %}
     server_name {{ vhost.servername }} {{ vhost.serveralias }};
 {% else %}
@@ -10,13 +11,9 @@ server {
 
     ssl_certificate           {{ vhost.sslcertfile }};
     ssl_certificate_key       {{ vhost.sslkeyfile }};
-
-    ssl on;
-    ssl_session_cache  builtin:1000  shared:SSL:10m;
-    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
-    ssl_prefer_server_ciphers on;
-
+    
+    include /etc/nginx/ssl.conf;
+    
     access_log      /var/log/nginx/{{ vhost.servername }}_ssl_access.log;
     error_log       /var/log/nginx/{{ vhost.servername }}_ssl_error.log warn;
 
@@ -30,16 +27,18 @@ server {
     {{ vhost.extra_parameters }}
 {% endif %}
 
-{% if vhost.proxy %}
-    proxy_set_header          Host $host;
-    proxy_set_header          Accept-Encoding "";
-    proxy_set_header          X-Real-IP $remote_addr;
-    proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header          X-Forwarded-Proto $scheme;
-    proxy_buffering on;
-    proxy_pass                http://{{ vhost.proxy.ip }}:{{ vhost.proxy.port }};
-    proxy_read_timeout        90;
-    proxy_redirect            http://{{ vhost.proxy.ip}}:{{ vhost.proxy.port }} https://$server_name;
+{% if vhost.proxy is defined and vhost.proxy %}
+    include /etc/nginx/proxy.conf;
+    proxy_pass                http://{{ vhost.proxy_ip }}:{{ vhost.proxy_port }};
+    proxy_redirect            http://{{ vhost.proxy_ip}}:{{ vhost.proxy_port }} https://$server_name;
+{% if vhost.custom_css is defined %}
+    proxy_set_header Accept-Encoding "";
+    sub_filter
+    '</head>'
+    '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ vhost.custom_css }}">
+    </head>';
+    sub_filter_once on;
+{% endif %}
 {% endif %}
 
     }
