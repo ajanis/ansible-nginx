@@ -104,3 +104,31 @@
     line: 'ignoreip = 10.0.0.0/8'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
+
+- name: "[NGINX] :: Set Fail2Ban Use Raw IPs for bans"
+  lineinfile:
+    regexp: '^usedns.*$'
+    line: 'usedns = raw'
+    path: "/etc/fail2ban/jail.conf"
+  notify: restart fail2ban
+
+- name: "[NGINX] :: Set Fail2Ban Ban Time"
+  lineinfile:
+    regexp: '^bantime.*$'
+    line: 'bantime  = 86400'
+    path: "/etc/fail2ban/jail.conf"
+  notify: restart fail2ban
+
+- name: "[NGINX] :: Set Fail2Ban Find Time"
+  lineinfile:
+    regexp: '^findtime.*$'
+    line: 'findtime  = 600'
+    path: "/etc/fail2ban/jail.conf"
+  notify: restart fail2ban
+
+- name: "[NGINX] :: Set Fail2Ban Max Retries"
+  lineinfile:
+    regexp: '^maxretry.*$'
+    line: 'maxretry  = 3'
+    path: "/etc/fail2ban/jail.conf"
+  notify: restart fail2ban
