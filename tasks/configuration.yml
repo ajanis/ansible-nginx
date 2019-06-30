@@ -1,6 +1,6 @@
 ---
 
-- name: create public_html directory
+- name: "[NGINX] :: create public_html directory"
   file:
     path: "{{ data_mount_root }}/{{ www_directory }}"
     state: directory
@@ -10,7 +10,7 @@
   notify:
     - restart nginx
 
-- name: Install SSL Key
+- name: "[NGINX] :: Install SSL Key"
   copy:
     content: "{{ item.sslkeycontent }}"
     dest: "{{ item.sslkeyfile }}"
@@ -21,7 +21,7 @@
   notify:
     - restart nginx
 
-- name: Install SSL Certificate Chain
+- name: "[NGINX] :: Install SSL Certificate Chain"
   copy:
     content: "{{ item.sslcertcontent }}"
     dest: "{{ item.sslcertfile }}"
@@ -32,7 +32,7 @@
   notify:
     - restart nginx
 
-- name: remove nginx default.conf
+- name: "[NGINX] :: Remove default vhost configs"
   file:
     path: "{{ item }}"
     state: absent
@@ -40,29 +40,42 @@
   notify:
     - restart nginx
 
-- name: template nginx.conf
+- name: "[NGINX] :: Build nginx.conf template"
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   notify:
     - restart nginx
 
-- name: template nginx vhost configs
+- name: "[NGINX] :: Build proxy.conf template"
   template:
-    src: default.conf.j2
-    dest: "/etc/nginx/sites-available/{{ www_domain }}"
+    src: proxy.conf.j2
+    dest: /etc/nginx/proxy.conf
   notify:
     - restart nginx
 
-- name: enable default site
-  file:
-    state: link
-    src: "/etc/nginx/sites-available/{{ www_domain }}"
-    dest: "/etc/nginx/sites-enabled/{{ www_domain }}"
-    owner: "{{ media_user_uid }}"
-    group: "{{ media_user_gid }}"
+- name: "[NGINX] :: Build ssl.conf template"
+  template:
+    src: ssl.conf.j2
+    dest: /etc/nginx/ssl.conf
+  notify:
+    - restart nginx
 
-- name: restart nginx
+- name: "[NGINX] :: Build NGINX vhost template"
+  template:
+    src: default.conf.j2
+    dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
+  notify:
+    - restart nginx
+
+- name: "[NGINX] :: Build NGINX SSL vhost template"
+  template:
+    src: default-ssl.conf.j2
+    dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
+  notify:
+    - restart nginx
+
+- name: "[NGINX] :: restart nginx"
   service:
     name: nginx
     state: restarted
