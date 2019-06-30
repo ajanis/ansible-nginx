@@ -12,6 +12,7 @@ events {
 
 http {
     server_names_hash_bucket_size {{ nginx_server_names_hash_bucket_size }};
+    server_tokens off;
     include       /etc/nginx/mime.types;
     include    /etc/nginx/proxy.conf;
     index    index.html index.htm index.php;
