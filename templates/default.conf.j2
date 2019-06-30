@@ -1,5 +1,14 @@
 # {{ ansible_managed }}
 
+server {
+    listen 80;
+    server_name {{ ansible_fqdn }};
+
+    location /nginx_status {
+        stub_status;
+    }
+}
+
 {% for vhost in nginx_vhosts %}
 server {
     listen {{ vhost.serverlisten }};
