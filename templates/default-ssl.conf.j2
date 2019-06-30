@@ -1,0 +1,47 @@
+{% for vhost in nginx_vhosts_ssl %}
+server {
+
+    listen {{ vhost.serverlisten }};
+{% if vhost.serveralias is defined %}
+    server_name {{ vhost.servername }} {{ vhost.serveralias }};
+{% else %}
+    server_name {{ vhost.servername }};
+{% endif %}
+
+    ssl_certificate           {{ vhost.sslcertfile }};
+    ssl_certificate_key       {{ vhost.sslkeyfile }};
+
+    ssl on;
+    ssl_session_cache  builtin:1000  shared:SSL:10m;
+    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+    ssl_prefer_server_ciphers on;
+
+    access_log      /var/log/nginx/{{ vhost.servername }}_ssl_access.log;
+    error_log       /var/log/nginx/{{ vhost.servername }}_ssl_error.log warn;
+
+    location / {
+
+{% if vhost.docroot is defined %}
+    root {{ vhost.docroot }};
+{% endif %}
+
+{% if vhost.extra_parameters is defined %}
+    {{ vhost.extra_parameters }}
+{% endif %}
+
+{% if vhost.proxy %}
+    proxy_set_header          Host $host;
+    proxy_set_header          Accept-Encoding "";
+    proxy_set_header          X-Real-IP $remote_addr;
+    proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header          X-Forwarded-Proto $scheme;
+    proxy_buffering on;
+    proxy_pass                http://{{ vhost.proxy.ip }}:{{ vhost.proxy.port }};
+    proxy_read_timeout        90;
+    proxy_redirect            http://{{ vhost.proxy.ip}}:{{ vhost.proxy.port }} https://$server_name;
+{% endif %}
+
+    }
+}
+{% endfor %}
