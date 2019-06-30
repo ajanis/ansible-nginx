@@ -15,7 +15,7 @@
     content: "{{ item.sslkeycontent }}"
     dest: "{{ item.sslkeyfile }}"
     owner: root
-    group: ssl-cert
+    group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
   notify:
@@ -26,9 +26,17 @@
     content: "{{ item.sslcertcontent }}"
     dest: "{{ item.sslcertfile }}"
     owner: root
-    group: ssl-cert
+    group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
+  notify:
+    - restart nginx
+
+- name: remove nginx default.conf
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ nginx_default_site }}"
   notify:
     - restart nginx
 
@@ -39,12 +47,20 @@
   notify:
     - restart nginx
 
-- name: template nginx default.conf
+- name: template nginx vhost configs
   template:
     src: default.conf.j2
-    dest: "{{ nginx_cfg_dir }}/default.conf"
+    dest: "/etc/nginx/sites-available/{{ www_domain }}"
   notify:
     - restart nginx
+
+- name: enable default site
+  file:
+    state: link
+    src: "/etc/nginx/sites-available/{{ www_domain }}"
+    dest: "/etc/nginx/sites-enabled/{{ www_domain }}"
+    owner: "{{ media_user_uid }}"
+    group: "{{ media_user_gid }}"
 
 - name: restart nginx
   service:
