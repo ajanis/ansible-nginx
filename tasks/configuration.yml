@@ -2,11 +2,11 @@
 
 - name: "[NGINX] :: create public_html directory"
   file:
-    path: "{{ data_mount_root }}/{{ www_directory }}"
+    path: "{{ nginx_default_docroot }}"
     state: directory
     mode: 0755
-    owner: "{{ media_user_uid }}"
-    group: "{{ media_user_gid }}"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
   notify:
     - restart nginx
 
@@ -101,34 +101,34 @@
   lineinfile:
     regexp: '^ignoreip.*$'
     insertafter: '^#.*ignoreip.*$'
-    line: 'ignoreip = 10.0.0.0/8'
+    line: 'ignoreip = {{ fail2ban_ignoreip }}'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
 
 - name: "[NGINX] :: Set Fail2Ban Use Raw IPs for bans"
   lineinfile:
     regexp: '^usedns.*$'
-    line: 'usedns = raw'
+    line: 'usedns = {{ fail2ban_usedns }}'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
 
 - name: "[NGINX] :: Set Fail2Ban Ban Time"
   lineinfile:
     regexp: '^bantime.*$'
-    line: 'bantime  = 86400'
+    line: 'bantime  = {{ fail2ban_bantime }}'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
 
 - name: "[NGINX] :: Set Fail2Ban Find Time"
   lineinfile:
     regexp: '^findtime.*$'
-    line: 'findtime  = 600'
+    line: 'findtime  = {{ fail2ban_findtime }}'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
 
 - name: "[NGINX] :: Set Fail2Ban Max Retries"
   lineinfile:
     regexp: '^maxretry.*$'
-    line: 'maxretry  = 3'
+    line: 'maxretry  = {{ fail2ban_maxretry }}'
     path: "/etc/fail2ban/jail.conf"
   notify: restart fail2ban
