@@ -1,7 +1,8 @@
 ---
-media_user_uid: 2000
-media_user_gid: 2000
+
 nginx_user: www-data
+nginx_group: www-data
+
 nginx_worker_processes: "5"
 nginx_worker_connections: "1024"
 nginx_server_names_hash_bucket_size: "64"
@@ -13,15 +14,22 @@ nginx_proxy_connect_timeout: "90"
 nginx_proxy_send_timeout: "90"
 nginx_proxy_read_timeout: "90"
 nginx_proxy_buffers: "32 4k"
-nginx_server_name: "{{ ansible_fqdn }}"
+nginx_default_servername: "{{ ansible_fqdn }}"
+nginx_default_docroot: "/var/lib/www"
+nginx_http_listen: 80
+nginx_https_listen: 443
 
-data_mount_root: "/data"
-configs_directory: "configs"
-media_directory: "media"
-git_directory: "git"
-www_directory: "public_html"
+nginx_vhosts:
+  - servername: "{{ nginx_default_servername }}"
+    serverlisten: "{{ nginx_http_listen }}"
+    docroot: "{{ nginx_default_docroot }}"
+    extra_parameters: |
+      autoindex on;
 
-media_root: '{{ data_mount_root }}'
+nginx_vhosts_ssl: []
 
-### WEBSERVER CONFIGS
-www_domain: 'home.example.com'
+fail2ban_bantime: "600"
+fail2ban_findtime: "600"
+fail2ban_maxretry: "5"
+fail2ban_usedns: "warn"
+fail2ban_ignoreip: "10.0.0.0/8"
