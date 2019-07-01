@@ -1,21 +1,23 @@
 ---
-- name: install nginx
+- name: "[NGINX] :: Install NGINX"
   package:
     name: "{{ item }}"
     state: present
   with_items: "{{ nginx_pkg }}"
 
-- name: enable nginx service
+- name: "[NGINX] :: Start / Enable NGINX"
   service:
     name: nginx
-    enabled: yes
+    state: started
+    enabled: true
 
-- name: install fail2ban
+- name: "[FAIL2BAN] :: Install Fail2Ban"
   package:
     name: fail2ban
     state: present
 
-- name: enable fail2ban service
+- name: "[FAIL2BAN] :: Start / Enable fail2ban"
   service:
     name: fail2ban
-    enabled: yes
+    state: started
+    enabled: true
