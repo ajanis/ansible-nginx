@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 server {
-    listen 80;
+    listen {{ nginx_http_listen }};
     server_name {{ ansible_fqdn }};
 
     location /nginx_status {
@@ -14,23 +14,23 @@ server {
 
 {% for vhost in nginx_vhosts %}
 server {
-    listen {{ vhost.serverlisten }};
-{% if vhost.serveralias is defined %}
-    server_name {{ vhost.servername }} {{ vhost.serveralias }};
+    listen {{ vhost.serverlisten | default(nginx_http_listen) }};
+{% if vhost.serveralias is defined and vhost.serveralias != None %}
+    server_name {{ vhost.servername | default(nginx_default_servername) }} {{ vhost.serveralias }};
 {% else %}
-    server_name {{ vhost.servername }};
+    server_name {{ vhost.servername | default(nginx_default_servername) }};
 {% endif %}
 
-    access_log      /var/log/nginx/{{ vhost.servername }}_access.log main;
-    error_log       /var/log/nginx/{{ vhost.servername }}_error.log warn;
+    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername)}}_access.log main;
+    error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_error.log warn;
 
     location / {
 
-{% if vhost.docroot is defined %}
+{% if vhost.docroot is defined and vhost.docroot != None %}
     root {{ vhost.docroot }};
 {% endif %}
 
-{% if vhost.extra_parameters is defined %}
+{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
     {{ vhost.extra_parameters }}
 {% endif %}
 

@@ -2,28 +2,28 @@
 
 {% for vhost in nginx_vhosts_ssl %}
 server {
-    listen {{ vhost.serverlisten }} ssl http2;
-{% if vhost.serveralias is defined %}
-    server_name {{ vhost.servername }} {{ vhost.serveralias }};
+    listen {{ vhost.serverlisten | default(nginx_https_listen) }} ssl http2;
+{% if vhost.serveralias is defined and vhost.serveralias != None %}
+    server_name {{ vhost.servername | default(nginx_default_servername) }} {{ vhost.serveralias }};
 {% else %}
-    server_name {{ vhost.servername }};
+    server_name {{ vhost.servername | default(nginx_default_servername) }};
 {% endif %}
 
-    ssl_certificate           {{ vhost.sslcertfile }};
-    ssl_certificate_key       {{ vhost.sslkeyfile }};
+    ssl_certificate           {{ vhost.sslcertfile | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
+    ssl_certificate_key       {{ vhost.sslkeyfile | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
     
     include /etc/nginx/ssl.conf;
     
-    access_log      /var/log/nginx/{{ vhost.servername }}_ssl_access.log;
-    error_log       /var/log/nginx/{{ vhost.servername }}_ssl_error.log warn;
+    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log;
+    error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
 
     location / {
 
-{% if vhost.docroot is defined %}
+{% if vhost.docroot is defined and vhost.docroot != None %}
     root {{ vhost.docroot }};
 {% endif %}
 
-{% if vhost.extra_parameters is defined %}
+{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
     {{ vhost.extra_parameters }}
 {% endif %}
 
