@@ -75,12 +75,12 @@
   notify:
     - restart nginx
 
-- name: "[NGINX] :: restart nginx"
+- name: "[NGINX] :: Restart NGINX"
   service:
     name: nginx
     state: restarted
 
-- name: "[NGINX] :: Copy Fail2Ban Filters"
+- name: "[FAIL2BAN] :: Copy Fail2Ban Filters"
   copy:
     src: "fail2ban/filter.d/{{ item }}"
     dest: "/etc/fail2ban/filter.d/{{ item }}"
@@ -91,44 +91,14 @@
     - nginx-noscript.conf
   notify: restart fail2ban
 
-- name: "[NGINX] :: Copy Fail2Ban Jail Config"
-  copy:
-    src: "fail2ban/jail.d/custom.conf"
-    dest: "/etc/fail2ban/jail.d/custom.conf"
+- name: "[FAIL2BAN] :: Copy Fail2Ban Local Config"
+  template:
+    src: "fail2ban/fail2ban.local.j2"
+    dest: "/etc/fail2ban/fail2ban.local"
   notify: restart fail2ban
 
-- name: "[NGINX] :: Set Fail2Ban Ignore IPs"
-  lineinfile:
-    regexp: '^ignoreip.*$'
-    insertafter: '^#.*ignoreip.*$'
-    line: 'ignoreip = {{ fail2ban_ignoreip }}'
-    path: "/etc/fail2ban/jail.conf"
-  notify: restart fail2ban
-
-- name: "[NGINX] :: Set Fail2Ban Use Raw IPs for bans"
-  lineinfile:
-    regexp: '^usedns.*$'
-    line: 'usedns = {{ fail2ban_usedns }}'
-    path: "/etc/fail2ban/jail.conf"
-  notify: restart fail2ban
-
-- name: "[NGINX] :: Set Fail2Ban Ban Time"
-  lineinfile:
-    regexp: '^bantime.*$'
-    line: 'bantime  = {{ fail2ban_bantime }}'
-    path: "/etc/fail2ban/jail.conf"
-  notify: restart fail2ban
-
-- name: "[NGINX] :: Set Fail2Ban Find Time"
-  lineinfile:
-    regexp: '^findtime.*$'
-    line: 'findtime  = {{ fail2ban_findtime }}'
-    path: "/etc/fail2ban/jail.conf"
-  notify: restart fail2ban
-
-- name: "[NGINX] :: Set Fail2Ban Max Retries"
-  lineinfile:
-    regexp: '^maxretry.*$'
-    line: 'maxretry  = {{ fail2ban_maxretry }}'
-    path: "/etc/fail2ban/jail.conf"
+- name: "[FAIL2BAN] :: Copy Fail2Ban Jail Local Config"
+  template:
+    src: "fail2ban/jail.local.j2"
+    dest: "/etc/fail2ban/jail.local"
   notify: restart fail2ban
