@@ -80,6 +80,15 @@
     name: nginx
     state: restarted
 
+- name: "[FAIL2BAN] :: Copy Fail2Ban SSH Private Key"
+  copy:
+    mode: 0600
+    owner: maas
+    content: "{{ fail2ban_ssh_private_key }}"
+    dest: /root/.ssh/id_rsa
+  when: fail2ban_ssh_private_key is defined and fail2ban_ssh_private_key != None
+
+
 - name: "[FAIL2BAN] :: Copy Fail2Ban Filters"
   copy:
     src: "fail2ban/filter.d/{{ item }}"
@@ -101,4 +110,10 @@
   template:
     src: "fail2ban/jail.local.j2"
     dest: "/etc/fail2ban/jail.local"
+  notify: restart fail2ban
+
+- name: "[FAIL2BAN] :: Copy Fail2Ban URLTable Action"
+  template:
+    src: "fail2ban/urltable_action.j2"
+    dest: "/etc/fail2ban/action.d/urltable.conf"
   notify: restart fail2ban
