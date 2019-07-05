@@ -52,3 +52,9 @@ fail2ban_chain: '<known/chain>'
 fail2ban_action: '%(action_)s'
 fail2ban_services:
   - name: sshd
+
+# For fal2ban urltable action
+fail2ban_pfsense_ip: 192.168.0.1
+fail2ban_pfsense_user: fail2ban
+fail2ban_urltable_file: '/var/lib/www/fail2ban.txt'
+fail2ban_ssh_private_key:
