@@ -27,7 +27,7 @@ actionstop = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} sudo /usr
 # Tags:    See jail.conf(5) man page
 # Values:  CMD
 #
-actionban = echo '<ip>' | tee -a  {{ fail2ban_urltable_file }}
+actionban = grep -q '<ip>' {{ fail2ban_urltable_file }} || echo '<ip>' | tee -a  {{ fail2ban_urltable_file }} > /dev/null
             ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} sudo /usr/bin/nice -n20 /etc/rc.update_urltables now forceupdate
 
 # Option:  actionunban
