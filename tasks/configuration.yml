@@ -12,8 +12,8 @@
 
 - name: "[NGINX] :: Install SSL Key"
   copy:
-    content: "{{ item.sslkeycontent }}"
-    dest: "{{ item.sslkeyfile }}"
+    content: "{{ item.ssl_privkey }}"
+    dest: "{{ item.ssl_keypath }}"
     owner: root
     group: root
     mode: 0640
@@ -23,8 +23,8 @@
 
 - name: "[NGINX] :: Install SSL Certificate Chain"
   copy:
-    content: "{{ item.sslcertcontent }}"
-    dest: "{{ item.sslcertfile }}"
+    content: "{{ item.ssl_certchain }}"
+    dest: "{{ item.ssl_certpath }}"
     owner: root
     group: root
     mode: 0640

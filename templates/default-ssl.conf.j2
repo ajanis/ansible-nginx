@@ -9,8 +9,8 @@ server {
     server_name {{ vhost.servername | default(nginx_default_servername) }};
 {% endif %}
 
-    ssl_certificate           {{ vhost.sslcertfile | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
-    ssl_certificate_key       {{ vhost.sslkeyfile | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
+    ssl_certificate           {{ vhost.ssl_certpath | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
+    ssl_certificate_key       {{ vhost.ssl_keypath | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
     
     include /etc/nginx/ssl.conf;
     
