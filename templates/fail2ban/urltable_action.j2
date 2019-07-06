@@ -29,6 +29,7 @@ actionstop = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} sudo /usr
 #
 actionban = grep -q '<ip>' {{ fail2ban_urltable_file }} || echo '<ip>' | tee -a  {{ fail2ban_urltable_file }} > /dev/null
             ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} sudo /usr/bin/nice -n20 /etc/rc.update_urltables now forceupdate
+            ssh fail2ban@10.0.10.1 sudo /sbin/pfctl -k '<ip>'
 
 # Option:  actionunban
 # Notes.:  command executed when unbanning an IP. Take care that the
