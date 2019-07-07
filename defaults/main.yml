@@ -45,7 +45,16 @@ fail2ban_findtime: 5m
 fail2ban_backend: auto
 fail2ban_usedns: "warn"
 fail2ban_destemail: root@localhost
+
 fail2ban_banaction: iptables-multiport
+#fail2ban_banaction: urltable
+# Set these if using custom PFSense action
+fail2ban_pfsense_ip:
+fail2ban_pfsense_user:
+fail2ban_urltable_file:
+fail2ban_ssh_private_key:
+
+
 fail2ban_mta: sendmail
 fail2ban_protocol: tcp
 fail2ban_chain: '<known/chain>'
