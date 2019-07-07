@@ -60,10 +60,33 @@ fail2ban_protocol: tcp
 fail2ban_chain: '<known/chain>'
 fail2ban_action: '%(action_)s'
 fail2ban_services:
-  - name: sshd
-
-# For fal2ban urltable action
-fail2ban_pfsense_ip: 192.168.0.1
-fail2ban_pfsense_user: fail2ban
-fail2ban_urltable_file: '/var/lib/www/fail2ban.txt'
-fail2ban_ssh_private_key:
+  - name: nginx-http-auth
+    enabled: True
+    filter: nginx-http-auth
+    port: http,https
+    logpath: /var/log/nginx/*.log
+  - name: nginx-noscript
+    enabled: True
+    filter: nginx-noscript
+    port: http,https
+    logpath: /var/log/nginx/*.log
+  - name: nginx-badbots
+    enabled: True
+    filter: nginx-badbots
+    port: http,https
+    logpath: /var/log/nginx/*.log
+  - name: nginx-botsearch
+    enabled: True
+    filter: nginx-botsearch
+    port: http,https
+    logpath: /var/log/nginx/*.log
+  - name: nginx-nohome
+    enabled: True
+    filter: nginx-nohome
+    port: http,https
+    logpath: /var/log/nginx/*.log
+  - name: nginx-404
+    enabled: True
+    filter: nginx-404
+    port: http,https
+    logpath: /var/log/nginx/*.log
