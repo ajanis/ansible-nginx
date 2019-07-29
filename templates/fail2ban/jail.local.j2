@@ -108,7 +108,11 @@ action = {{ fail2ban_action }}
 enabled = {{ service.enabled | default(true) | bool | to_json }}
 {% for option, value in service.items()|sort %}
 {% if option not in ['name', 'enabled'] %}
+{% if value is sequence and value is not string %}
+{{ option }} = {{ value|join('\n')|indent(4, False) }}
+{% else %}
 {{ option }} = {{ value }}
+{% endif %}
 {% endif %}
 {% endfor %}
 
