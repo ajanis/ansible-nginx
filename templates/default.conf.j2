@@ -48,5 +48,14 @@ server {
 {% endif %}
 {% endif %}
     }
+
+{% if vhost.extra_locations is defined and vhost.extra_locations is mapping %}
+{% for key, value in vhost.extra_locations.items() %}
+    location /{{ key }} {
+    root {{ value }};
+    }
+{% endfor %}
+{% endif %}
+
 }
 {% endfor %}
