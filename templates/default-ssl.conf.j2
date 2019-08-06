@@ -14,7 +14,7 @@ server {
     
     include /etc/nginx/ssl.conf;
     
-    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log;
+    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log main;
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
 
     location / {
