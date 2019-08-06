@@ -1,0 +1,11 @@
+[www]
+user = {{ nginx_user }}
+group = {{ nginx_group }}
+listen = /run/php/php7.2-fpm.sock
+listen.owner = {{ nginx_user }}
+listen.group = {{ nginx_group }}
+pm = dynamic
+pm.max_children = 5
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3

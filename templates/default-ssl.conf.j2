@@ -18,15 +18,12 @@ server {
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
 
     location / {
-
 {% if vhost.docroot is defined and vhost.docroot != None %}
     root {{ vhost.docroot }};
 {% endif %}
-
 {% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
-    {{ vhost.extra_parameters }}
+    {{ vhost.extra_parameters|indent(4, False)}}
 {% endif %}
-
 {% if vhost.proxy is defined and vhost.proxy %}
     include /etc/nginx/proxy.conf;
     proxy_pass                http://{{ vhost.proxy_ip }}:{{ vhost.proxy_port }};
