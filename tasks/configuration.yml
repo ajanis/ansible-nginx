@@ -75,10 +75,23 @@
   notify:
     - restart nginx
 
-- name: "[NGINX] :: Restart NGINX"
-  service:
-    name: nginx
-    state: restarted
+#- name: "[NGINX] :: Copy PHP-FPM php.ini"
+#  template:
+#    src: php.ini.j2
+#    dest: "/etc/php/{{ php_version }}/fpm/php.ini"
+#  register: update_fpm_ini
+#
+#- name: "[NGINX] :: Copy PHP-FPM www.conf"
+#  template:
+#    src: www.conf.j2
+#    dest: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+#  register: update_fpm_www
+#
+#- name: "[NGINX] :: Restart php-fpm"
+#  service:
+#    name: "php{{ php_version }}-fpm"
+#    state: restarted
+#  when: update_fpm_www is changed or update_fpm_ini is changed
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban SSH Private Key"
   copy:
