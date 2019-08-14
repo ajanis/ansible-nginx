@@ -3,9 +3,10 @@
 nginx_user: www-data
 nginx_group: www-data
 
-nginx_worker_processes: "5"
+nginx_worker_processes: "32"
 nginx_worker_connections: "1024"
-nginx_server_names_hash_bucket_size: "64"
+nginx_worker_rlimit_nofile: "409600"
+nginx_server_names_hash_bucket_size: "1024"
 nginx_upstream_repo: true
 nginx_upstream_repo_baseurl: "http://nginx.org/packages"
 nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
