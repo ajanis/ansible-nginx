@@ -2,6 +2,7 @@
 
 user              {{ nginx_user }} {{ nginx_group }};
 worker_processes  {{ nginx_worker_processes }};
+worker_rlimit_nofile {{ nginx_worker_rlimit_nofile }};
 
 error_log  /var/log/nginx/error.log;
 pid        /var/run/nginx.pid;
@@ -29,8 +30,13 @@ http {
 
     sendfile        on;
     tcp_nopush     on;
-    keepalive_timeout  65;
     gzip  on;
-
+    gzip_vary on;
+    gzip_disable “MSIE [1-6].”;
+    gzip_proxied any;
+    gzip_http_version 1.0;
+    gzip_min_length 1000;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
     include {{ nginx_cfg_dir }}/*;
 }
