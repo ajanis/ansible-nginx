@@ -33,8 +33,7 @@ server {
 {% endif %}
 {% if vhost.proxy is defined and vhost.proxy %}
     include /etc/nginx/proxy.conf;
-    proxy_pass                http://{{ vhost.proxy_ip }}:{{ vhost.proxy_port }};
-    proxy_redirect            http://{{ vhost.proxy_ip}}:{{ vhost.proxy_port }} http://$server_name;
+    proxy_pass                http://{{ vhost.backend }};
 {% if vhost.custom_css is defined %}
     proxy_set_header Accept-Encoding "";
     sub_filter
