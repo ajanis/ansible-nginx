@@ -47,10 +47,17 @@
   notify:
     - restart nginx
 
-- name: "[NGINX] :: Build proxy.conf template"
+- name: "[NGINX] :: Build NGINX vhost proxy template"
   template:
     src: proxy.conf.j2
     dest: /etc/nginx/proxy.conf
+  notify:
+    - restart nginx
+
+- name: "[NGINX] :: Build NGINX vhost proxy-cache template"
+  template:
+    src: proxy-cache.conf.j2
+    dest: /etc/nginx/proxy-cache.conf
   notify:
     - restart nginx
 
@@ -65,6 +72,13 @@
   template:
     src: upstream.conf.j2
     dest: "{{ nginx_cfg_dir }}/upstream.conf"
+  notify:
+    - restart nginx
+
+- name: "[NGINX] :: Build NGINX Cache template"
+  template:
+    src: cache.conf.j2
+    dest: "{{ nginx_cfg_dir }}/cache.conf"
   notify:
     - restart nginx
 
