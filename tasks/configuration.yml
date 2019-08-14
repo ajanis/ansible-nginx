@@ -61,6 +61,13 @@
   notify:
     - restart nginx
 
+- name: "[NGINX] :: Build NGINX Backend template"
+  template:
+    src: upstream.conf.j2
+    dest: "{{ nginx_cfg_dir }}/upstream.conf"
+  notify:
+    - restart nginx
+
 - name: "[NGINX] :: Build NGINX vhost template"
   template:
     src: default.conf.j2
