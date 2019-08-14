@@ -10,15 +10,27 @@ nginx_server_names_hash_bucket_size: "1024"
 nginx_upstream_repo: true
 nginx_upstream_repo_baseurl: "http://nginx.org/packages"
 nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+nginx_proxy_buffering: "on"
+nginx_client_max_body_size: "10m"
 nginx_client_body_buffer_size: "128k"
-nginx_proxy_connect_timeout: "90"
-nginx_proxy_send_timeout: "90"
-nginx_proxy_read_timeout: "90"
+nginx_proxy_connect_timeout: "180s"
+nginx_proxy_send_timeout: "180s"
+nginx_proxy_read_timeout: "180s"
 nginx_proxy_buffers: "32 4k"
+nginx_proxy_buffer_size: 4k
+nginx_proxy_busy_buffers_size: 8k
+nginx_proxy_max_temp_file_size: 2048m
+nginx_proxy_temp_file_write_size: 32k
+nginx_fastcgi_read_timeout: "180s"
+nginx_fastcgi_send_timeout: "180s"
 nginx_default_servername: "{{ ansible_fqdn }}"
 nginx_default_docroot: "/var/lib/www"
 nginx_http_listen: 80
 nginx_https_listen: 443
+
+nginx_keepalive: 32
+nginx_keepalive_requests: 100
+nginx_keepalive_timeout: "300s"
 
 nginx_vhosts:
   - servername: "{{ nginx_default_servername }}"
