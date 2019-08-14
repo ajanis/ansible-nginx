@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+{% for backend in nginx_backends %}
+upstream {{ backend.service }} {
+{% for host in backend.servers %}
+	server {{ host }};
+{% endfor %}
+	keepalive {{ nginx_keepalive }};
+}
+{% endfor %}
