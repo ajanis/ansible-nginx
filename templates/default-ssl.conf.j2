@@ -27,6 +27,15 @@ server {
 {% if vhost.proxy is defined and vhost.proxy %}
     include /etc/nginx/proxy.conf;
     proxy_pass                http://{{ vhost.backend }};
+{% if nginx_proxy_cache_enabled and vhost.proxy_cache is defined and vhost.proxy_cache != None %}
+{% if vhost.proxy_cache %}
+    include /etc/nginx/proxy-cache.conf;
+{% else %}
+proxy_cache off;
+if_modified_since off;
+add_header Last-Modified "";
+{% endif %}
+{% endif %}
 {% if vhost.custom_css is defined %}
     proxy_set_header Accept-Encoding "";
     sub_filter
