@@ -1,6 +1,8 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
 server {
+
     listen {{ nginx_http_listen }};
     server_name {{ ansible_fqdn }};
 
@@ -9,11 +11,13 @@ server {
         access_log off;
         allow 127.0.0.1;
         deny all;
+        }
     }
-}
 
 {% for vhost in nginx_vhosts %}
+
 server {
+
     listen {{ vhost.serverlisten | default(nginx_http_listen) }};
 {% if vhost.serveralias is defined and vhost.serveralias != None %}
     server_name {{ vhost.servername | default(nginx_default_servername) }} {{ vhost.serveralias }};
@@ -25,40 +29,56 @@ server {
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_error.log warn;
 
     location / {
-{% if vhost.docroot is defined and vhost.docroot != None %}
-    root {{ vhost.docroot }};
-{% endif %}
-{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
-    {{ vhost.extra_parameters|indent(4, False) }}
-{% endif %}
-{% if vhost.proxy is defined and vhost.proxy %}
-    include /etc/nginx/proxy.conf;
-    proxy_pass                http://{{ vhost.backend }};
-{% if nginx_proxy_cache_enabled and vhost.proxy_cache is defined and vhost.proxy_cache != None %}
-{% if vhost.proxy_cache %}
-    include /etc/nginx/proxy-cache.conf;
-{% else %}
-proxy_cache off;
-if_modified_since off;
-add_header Last-Modified "";
-{% endif %}
-{% endif %}
-{% if vhost.custom_css is defined %}
-    proxy_set_header Accept-Encoding "";
-    sub_filter
-    '</head>'
-    '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ vhost.custom_css }}">
-    </head>';
-    sub_filter_once on;
-{% endif %}
-{% endif %}
-    }
+    {% if vhost.docroot is defined and vhost.docroot != None %}
+        root {{ vhost.docroot }};
+    {% endif %}
+    {% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
+        {{ vhost.extra_parameters|indent(8, False) }}
+    {% endif %}
+    {% if vhost.proxy is defined and vhost.proxy %}
+        include /etc/nginx/proxy.conf;
+        proxy_pass http://{{ vhost.backend }};
+        {% if vhost.custom_css is defined %}
+        proxy_set_header Accept-Encoding "";
+        sub_filter
+        '</head>'
+        '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ vhost.custom_css }}">
+        </head>';
+        sub_filter_once on;
+        {% endif %}
+        {% if nginx_proxy_cache_enabled and nginx_proxy_cache is defined and nginx_proxy_cache != None %}
+            {% if vhost.proxy_cache is defined and vhost.proxy_cache %}
+                {% if vhost.proxy_cache_location is not defined or vhost.proxy_cache_location == "/" %}
+        include /etc/nginx/proxy-cache.conf;
+        }
+                {% else %}
+        }
+
+    location {{ vhost.proxy_cache_location }} {
+        include /etc/nginx/proxy.conf;
+        proxy_pass http://{{ vhost.backend }};
+        include /etc/nginx/proxy-cache.conf;
+        }
+                {% endif %}
+            {% else %}
+        proxy_cache off;
+        if_modified_since off;
+        add_header Last-Modified "";
+        }
+            {% endif %}
+        {% else %}
+        }
+        {% endif %}
+    {% else %}
+        }
+    {% endif %}
+
 {% if vhost.extra_locations is defined and vhost.extra_locations is mapping %}
 {% for key, value in vhost.extra_locations.items() %}
     location /{{ key }} {
-    root {{ value }};
-    }
+        root {{ value }};
+        }
 {% endfor %}
 {% endif %}
-}
+    }
 {% endfor %}
