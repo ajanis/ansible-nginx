@@ -57,6 +57,7 @@ nginx_client_header_timeout: "180s"
 nginx_proxy_cache_enabled: True
 nginx_proxy_cache: "nginx-cache"
 nginx_proxy_cache_path: "/tmp/{{ nginx_proxy_cache }}"
+nginx_proxy_cache_key: '$scheme$host$proxy_host$request_uri'
 nginx_proxy_cache_size: "16m"
 nginx_proxy_cache_max_size: "2048m"
 nginx_proxy_cache_inactive: "10m"
