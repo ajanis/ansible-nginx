@@ -60,9 +60,13 @@ nginx_proxy_cache_path: "/tmp/{{ nginx_proxy_cache }}"
 nginx_proxy_cache_key: '$scheme$host$proxy_host$request_uri'
 nginx_proxy_cache_size: "16m"
 nginx_proxy_cache_max_size: "2048m"
-nginx_proxy_cache_inactive: "10m"
+nginx_proxy_cache_inactive: "1M"
 nginx_proxy_cache_use_temp_path: "off"
-nginx_proxy_cache_valid: "200 5m"
+nginx_proxy_cache_valid: 
+  - "200 302 1M"
+  - "404 1m"
+nginx_proxy_cache_min_uses: "1"
+nginx_proxy_cache_background_update: "on"
 nginx_proxy_cache_use_stale:
   - error
   - timeout
