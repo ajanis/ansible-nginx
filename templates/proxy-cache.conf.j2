@@ -2,9 +2,16 @@
 
 # Proxy Cache
 proxy_ignore_headers Set-Cookie;
+proxy_ignore_headers Cache-Control;
 add_header X-Cache-Status $upstream_cache_status;
+proxy_no_cache $http_x_no_cache;
 proxy_cache {{ nginx_proxy_cache }};
-proxy_cache_valid {{ nginx_proxy_cache_valid }};
+proxy_cache_key {{ nginx_proxy_cache_key }};
+{% for item in nginx_proxy_cache_valid %}
+proxy_cache_valid {{ item }};
+{% endfor %}
+proxy_cache_min_uses {{ nginx_proxy_cache_min_uses }};
+proxy_cache_background_update {{ nginx_proxy_cache_background_update }};
 proxy_cache_use_stale {% for resp in nginx_proxy_cache_use_stale %}{{ resp }}{% if not loop.last %} {% endif %}{% endfor %};
 proxy_cache_revalidate {{ nginx_proxy_cache_revalidate }};
 proxy_cache_lock {{ nginx_proxy_cache_lock }};
