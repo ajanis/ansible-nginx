@@ -99,6 +99,8 @@ nginx_vhosts:
 
 nginx_vhosts_ssl: []
 
+fail2ban_enable: False
+
 fail2ban_loglevel: INFO
 fail2ban_logtarget: SYSLOG
 fail2ban_syslog_target: /var/log/fail2ban.log
