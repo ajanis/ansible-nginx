@@ -1,0 +1,13 @@
+---
+- name: "[FAIL2BAN] :: Install Fail2Ban"
+  package:
+    name: fail2ban
+    state: present
+  register: fail2ban_installed
+
+- name: "[FAIL2BAN] :: Start / Enable fail2ban"
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: fail2ban_installed is changed

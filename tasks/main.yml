@@ -8,3 +8,9 @@
 - include_tasks: repository.yml
 - include_tasks: installation.yml
 - include_tasks: configuration.yml
+
+- include_tasks: install_fail2ban.yml
+  when: fail2ban_enable
+
+- include_tasks: configure_fail2ban.yml
+  when: fail2ban_enable
