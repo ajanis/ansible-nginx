@@ -80,7 +80,6 @@ nginx_proxy_cache_lock: "on"
 
 nginx_fastcgi_read_timeout: "180s"
 nginx_fastcgi_send_timeout: "180s"
-
 nginx_default_servername: "{{ ansible_fqdn }}"
 nginx_default_docroot: "/var/lib/www"
 nginx_http_listen: 80
