@@ -4,7 +4,7 @@
 server {
 
     listen {{ nginx_http_listen }};
-    server_name {{ ansible_fqdn }};
+    server_name localhost;
 
     location /nginx_status {
         stub_status;
