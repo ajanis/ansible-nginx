@@ -2,7 +2,6 @@
 # {{ ansible_managed }}
 
 {% for vhost in nginx_vhosts_ssl %}
-
 server {
     listen {{ vhost.serverlisten | default(nginx_https_listen) }} ssl http2;
 {% if vhost.serveralias is defined and vhost.serveralias != None %}
@@ -10,66 +9,41 @@ server {
 {% else %}
     server_name {{ vhost.servername | default(nginx_default_servername) }};
 {% endif %}
-
     ssl_certificate           {{ vhost.ssl_certpath | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
     ssl_certificate_key       {{ vhost.ssl_keypath | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
-
     include /etc/nginx/ssl.conf;
-
     access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log main;
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
-
-    location / {
-    {% if vhost.docroot is defined and vhost.docroot != None %}
-        root {{ vhost.docroot }};
-    {% endif %}
-    {% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
-        {{ vhost.extra_parameters|indent(8, False) }}
-    {% endif %}
-    {% if vhost.proxy is defined and vhost.proxy %}
+{% for location in vhost.locations %}
+    location {{ location.name }} {
+{% if location.docroot is defined and location.docroot != None %}
+        root {{ location.docroot }};
+{% endif %}
+{% if location.extra_parameters is defined and location.extra_parameters != None %}
+        {{ location.extra_parameters|indent(8, False) }}
+{% endif %}
+{% if location.proxy is defined and location.proxy %}
         include /etc/nginx/proxy.conf;
-        proxy_pass http://{{ vhost.backend }};
-        {% if vhost.custom_css is defined %}
+        proxy_pass http://{{ location.backend }};
+{% if location.custom_css is defined %}
         proxy_set_header Accept-Encoding "";
         sub_filter
         '</head>'
-        '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ vhost.custom_css }}">
+        '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ location.custom_css }}">
         </head>';
         sub_filter_once on;
-        {% endif %}
-        {% if nginx_proxy_cache_enabled and nginx_proxy_cache is defined and nginx_proxy_cache != None %}
-            {% if vhost.proxy_cache is defined and vhost.proxy_cache %}
-                {% if vhost.proxy_cache_location is not defined or vhost.proxy_cache_location == "/" %}
+{% endif %}
+{% if nginx_proxy_cache_enabled and nginx_proxy_cache is defined and nginx_proxy_cache != None %}
+{% if location.proxy_cache is defined and location.proxy_cache %}
         include /etc/nginx/proxy-cache.conf;
-        }
-                {% else %}
-        }
-
-    location {{ vhost.proxy_cache_location }} {
-        include /etc/nginx/proxy.conf;
-        proxy_pass http://{{ vhost.backend }};
-        include /etc/nginx/proxy-cache.conf;
-        }
-                {% endif %}
-            {% else %}
+{% else %}
         proxy_cache off;
         if_modified_since off;
-        add_header Last-Modified "";
-        }
-            {% endif %}
-        {% else %}
-        }
-        {% endif %}
-    {% else %}
-        }
-    {% endif %}
-
-{% if vhost.extra_locations is defined and vhost.extra_locations is mapping %}
-{% for key, value in vhost.extra_locations.items() %}
-    location /{{ key }} {
-        root {{ value }};
+        add_header Last-Modified "";        
+{% endif %}
+{% endif %}
+{% endif %}
         }
 {% endfor %}
-{% endif %}
     }
 {% endfor %}
