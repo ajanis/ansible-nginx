@@ -3,6 +3,9 @@
 nginx_user: www-data
 nginx_group: www-data
 
+ssl_cert:
+ssl_key:
+
 nginx_index:
   - 'index.php'
   - 'index.html'
@@ -96,7 +99,28 @@ nginx_vhosts:
     extra_parameters: |
       autoindex on;
 
-nginx_vhosts_ssl: []
+nginx_vhosts:
+  - servername: "{{ nginx_default_servername }}"
+    serveralias: "{{ ansible_eth0.ipv4.address }}"
+    serverlisten: "{{ nginx_http_listen }}"
+    locations:
+      - name: /
+        docroot: "/var/lib/www"
+        extra_parameters: |
+          fancyindex on;
+
+nginx_vhosts_ssl:
+  - servername: "{{ nginx_default_servername }}"
+    serverlisten: "{{ nginx_https_listen }}"
+    ssl_certchain: "{{ ssl_cert }}"
+    ssl_privkey: "{{ ssl_key }}"
+    ssl_certpath: "/etc/ssl/certs/custom.pem"
+    ssl_keypath: "{/etc/ssl/private/custom.key"
+    locations:
+      - name: /
+        docroot: "/var/lib/www"
+        extra_parameters: |
+          fancyindex on;
 
 fail2ban_enable: False
 
@@ -119,12 +143,17 @@ fail2ban_usedns: "warn"
 fail2ban_destemail: root@localhost
 
 fail2ban_banaction: iptables-multiport
+
+
+# Custom PFSense URLTable Ban Action
 #fail2ban_banaction: urltable
-# Set these if using custom PFSense action
+
+# Set these variables if using URLTable Ban Action
 fail2ban_pfsense_ip:
 fail2ban_pfsense_user:
 fail2ban_urltable_file:
 fail2ban_ssh_private_key:
+
 
 
 fail2ban_mta: sendmail
