@@ -1,10 +1,23 @@
-Ansible-Nginx
-=========
+# Ansible-Nginx
+
+<!-- MarkdownTOC -->
+
+- Requirements
+- Role Variables
+  - defaults/main.yml
+  - vars/Debian.yml
+  - vars/RedHat.yml
+- Dependencies
+- Example Group Variables
+- Example Playbook
+- License
+- Author Information
+
+<!-- /MarkdownTOC -->
 
 Set up an NGINX webserver with configurable vhosts, reverse proxies, proxy caching, ssl and Fail2Ban
 
-Requirements
-------------
+## Requirements
 
 If you wish to enable SSL, you will need to update the variables for ```ssl_cert``` and ```ssl_key```
 
@@ -23,8 +36,7 @@ fail2ban_ssh_private_key:
 
 
 
-Role Variables
---------------
+## Role Variables
 
 ### defaults/main.yml
 
@@ -241,12 +253,10 @@ nginx_default_site:
   - /etc/nginx/conf.d/default.conf
 ```
 
-Dependencies
-------------
+## Dependencies
 N/A
 
-Example Group Variables
-----------
+## Example Group Variables
 
 ```
 www_domain: 'home.example.com'
@@ -401,8 +411,7 @@ nginx_vhosts_ssl:
 ```
 
 
-Example Playbook
-----------------
+## Example Playbook
 
 ```
 - name: "[NGINX] :: Deploy NGINX Webserver / reverse proxy"
@@ -415,12 +424,10 @@ Example Playbook
 
 ```
 
-License
--------
+## License
 
 MIT
 
-Author Information
-------------------
+## Author Information
 
 Created by Alan Janis
