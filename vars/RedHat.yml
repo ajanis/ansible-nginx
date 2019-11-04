@@ -1,8 +1,12 @@
 ---
+nginx_upstream_repo: true
+nginx_upstream_repo_baseurl: "http://nginx.org/packages"
+nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+
 nginx_pkgs: 
   - nginx-common
   - nginx-extras
-  - libnginx-mod-http-fancyindex
+#  - libnginx-mod-http-fancyindex
 #  - php-fpm
 
 nginx_cfg_dir: /etc/nginx/conf.d
