@@ -1,13 +1,6 @@
 ---
-- name: "[NGINX] :: Install NGINX"
-  package:
-    name: "{{ nginx_pkgs }}"
-    state: present
-  register: nginx_installed
+- include_tasks: install-debian.yml
+  when: ansible_os_family == "Debian"
 
-- name: "[NGINX] :: Start / Enable NGINX"
-  service:
-    name: nginx
-    state: started
-    enabled: true
-  when: nginx_installed is changed
+- include_tasks: install-redhat.yml
+  when: ansible_os_family == "RedHat"
