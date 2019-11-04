@@ -1,0 +1,47 @@
+
+
+- name: configure upstream nginx apt key
+  apt_key:
+    url: "{{ nginx_upstream_repo_key }}"
+    state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
+  when: 
+    - ansible_os_family == "Debian"
+    - nginx_upstream_repo
+
+- name: configure upstream nginx apt repository
+  apt_repository:
+    repo: "deb {{ nginx_upstream_repo_baseurl }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx"
+    state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
+  when: 
+    - ansible_os_family == "Debian"
+    - nginx_upstream_repo
+
+- name: Install NGINX PPA repository dependencies
+  apt:
+    name: "{{ nginx_ppa_reqs }}"
+    state: latest
+    update_cache: yes
+  when: 
+    - ansible_os_family == "Debian"
+    - not nginx_upstream_repo
+
+- name: Install NGINX PPA repository for NGINX
+  apt_repository:
+    repo: "{{ nginx_pkgs_ppa }}"
+    state: "{% if not nginx_upstream_repo %}present{% else %}absent{% endif %}"
+  when: 
+    - ansible_os_family == "Debian"
+    - not nginx_upstream_repo
+
+- name: Install NGINX
+  apt:
+    name: "{{ nginx_pkgs }}"
+    state: latest
+    update_cache: yes
+
+- name: Install NGINX Module packages
+  apt:
+    name: "{{ nginx_module_pkgs }}"
+    state: latest
+    update_cache: yes
+  when: ansible_distribution_major_version >= "18"

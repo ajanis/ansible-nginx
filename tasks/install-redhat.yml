@@ -1,16 +1,3 @@
----
-- name: configure upstream nginx apt key
-  apt_key:
-    url: "{{ nginx_upstream_repo_key }}"
-    state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
-  when: ansible_os_family == "Debian"
-
-- name: configure upstream nginx apt repository
-  apt_repository:
-    repo: "deb {{ nginx_upstream_repo_baseurl }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx"
-    state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
-  when: ansible_os_family == "Debian"
-
 - name: configure upstream nginx rpm key
   rpm_key:
     key: "{{ nginx_upstream_repo_key }}"
@@ -34,3 +21,8 @@
     name: epel-release
     state: "{% if not nginx_upstream_repo %}present{% else %}absent{% endif %}"
   when: ansible_distribution == "CentOS"
+
+- name: Install nginx
+  yum:
+    name: "{{ nginx_pkgs }}"
+    state: present
