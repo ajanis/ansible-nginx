@@ -39,7 +39,7 @@ http {
     client_header_timeout {{ nginx_client_header_timeout }};
 
     log_format main {{ nginx_log_format_main | indent(20, False) }}
-                    
+
     access_log  {{ nginx_access_log }};
 
     include /etc/nginx/mime.types;

@@ -22,7 +22,7 @@ server {
 {% else %}
     server_name {{ vhost.servername | default(nginx_default_servername) }};
 {% endif %}
-    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername)}}_access.log main;
+    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_access.log main;
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_error.log warn;
 {% for location in vhost.locations %}
     location {{ location.name }} {
@@ -49,7 +49,7 @@ server {
 {% else %}
         proxy_cache off;
         if_modified_since off;
-        add_header Last-Modified "";        
+        add_header Last-Modified "";
 {% endif %}
 {% endif %}
 {% endif %}
