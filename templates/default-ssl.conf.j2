@@ -14,6 +14,9 @@ server {
     include /etc/nginx/ssl.conf;
     access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log main;
     error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
+{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
+    {{ vhost.extra_parameters|indent(4, False) }}
+{% endif %}
 {% for location in vhost.locations %}
     location {{ location.name }} {
 {% if location.docroot is defined and location.docroot != None %}
