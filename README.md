@@ -23,7 +23,7 @@ If you wish to enable SSL, you will need to update the variables for ```ssl_cert
 
 To use the custom PFSense URLTable Ban Action for Fail2Ban, you will need to configure an SSH user on your PFSense server with an SSH Key and update the following variables. *** NOTE: This configuration is beyond the scope of this document ***
 
-```
+```yaml
 # Custom PFSense URLTable Ban Action
 #fail2ban_banaction: urltable
 
@@ -40,12 +40,12 @@ fail2ban_ssh_private_key:
 
 ### defaults/main.yml
 
-```
+```yaml
 nginx_user: www-data
 nginx_group: www-data
 
-ssl_key:
 ssl_cert:
+ssl_key:
 
 nginx_index:
   - 'index.php'
@@ -77,9 +77,8 @@ nginx_worker_processes: "32"
 nginx_worker_connections: "1024"
 nginx_worker_rlimit_nofile: "409600"
 nginx_server_names_hash_bucket_size: "1024"
-nginx_upstream_repo: true
-nginx_upstream_repo_baseurl: "http://nginx.org/packages"
-nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+
+nginx_extra_parameters:
 
 nginx_proxy_temp_path: "/tmp/nginx-proxy-temp"
 nginx_proxy_buffering: "on"
@@ -106,7 +105,7 @@ nginx_proxy_cache_size: "16m"
 nginx_proxy_cache_max_size: "2048m"
 nginx_proxy_cache_inactive: "1M"
 nginx_proxy_cache_use_temp_path: "off"
-nginx_proxy_cache_valid: 
+nginx_proxy_cache_valid:
   - "200 302 1M"
   - "404 1m"
 nginx_proxy_cache_min_uses: "1"
@@ -134,9 +133,16 @@ nginx_keepalive_requests: 100
 nginx_keepalive_timeout: "300s"
 
 nginx_vhosts:
-  - servername: "home.example.com"
-    serveralias: "example.com www.example.com {{ ansible_eth0.ipv4.address }}"
-    serverlisten: "80 default_server"
+  - servername: "{{ nginx_default_servername }}"
+    serverlisten: "{{ nginx_http_listen }}"
+    docroot: "{{ nginx_default_docroot }}"
+    extra_parameters: |
+      autoindex on;
+
+nginx_vhosts:
+  - servername: "{{ nginx_default_servername }}"
+    serveralias: "{{ ansible_eth0.ipv4.address }}"
+    serverlisten: "{{ nginx_http_listen }}"
     locations:
       - name: /
         docroot: "/var/lib/www"
@@ -144,9 +150,8 @@ nginx_vhosts:
           fancyindex on;
 
 nginx_vhosts_ssl:
-  - servername: "home.example.com"
-    serveralias: "example.com www.example.com"
-    serverlisten: "443 default_server"
+  - servername: "{{ nginx_default_servername }}"
+    serverlisten: "{{ nginx_https_listen }}"
     ssl_certchain: "{{ ssl_cert }}"
     ssl_privkey: "{{ ssl_key }}"
     ssl_certpath: "/etc/ssl/certs/custom.pem"
@@ -179,6 +184,7 @@ fail2ban_destemail: root@localhost
 
 fail2ban_banaction: iptables-multiport
 
+
 # Custom PFSense URLTable Ban Action
 #fail2ban_banaction: urltable
 
@@ -187,6 +193,7 @@ fail2ban_pfsense_ip:
 fail2ban_pfsense_user:
 fail2ban_urltable_file:
 fail2ban_ssh_private_key:
+
 
 
 fail2ban_mta: sendmail
@@ -224,13 +231,24 @@ fail2ban_services:
     filter: nginx-404
     port: http,https
     logpath: /var/log/nginx/*.log
+
 ```
 
 ### vars/Debian.yml
-```
+```yaml
+nginx_upstream_repo: True
+nginx_upstream_repo_baseurl: "http://nginx.org/packages"
+nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+
+nginx_ppa_reqs:
+  - software-properties-common
+nginx_ppa_repo: "ppa:nginx/stable"
+
 nginx_pkgs:
   - nginx-common
   - nginx-extras
+
+nginx_module_pkgs:
   - libnginx-mod-http-fancyindex
 
 nginx_cfg_dir: /etc/nginx/conf.d
@@ -242,15 +260,21 @@ nginx_default_site:
 ```
 
 ### vars/RedHat.yml
-```
-nginx_pkgs: 
+```yaml
+nginx_upstream_repo: true
+nginx_upstream_repo_baseurl: "http://nginx.org/packages"
+nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+
+nginx_pkgs:
   - nginx-common
   - nginx-extras
-  - libnginx-mod-http-fancyindex
+#  - libnginx-mod-http-fancyindex
+#  - php-fpm
 
 nginx_cfg_dir: /etc/nginx/conf.d
 nginx_default_site:
   - /etc/nginx/conf.d/default.conf
+
 ```
 
 ## Dependencies
@@ -258,7 +282,7 @@ N/A
 
 ## Example Group Variables
 
-```
+```yaml
 www_domain: 'home.example.com'
 
 ssl_key: "{{ vault_ssl_key }}"
@@ -413,7 +437,7 @@ nginx_vhosts_ssl:
 
 ## Example Playbook
 
-```
+```yaml
 - name: "[NGINX] :: Deploy NGINX Webserver / reverse proxy"
   hosts:
     - all
