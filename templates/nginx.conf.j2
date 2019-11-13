@@ -43,6 +43,11 @@ http {
     access_log  {{ nginx_access_log }};
 
     include /etc/nginx/mime.types;
+
+{% if nginx_extra_parameters is defined and nginx_extra_parameters != None %}
+    {{ nginx_extra_parameters|indent(4, False) }}
+{% endif %}
+
     include {{ nginx_cfg_dir }}/*;
 
 }
