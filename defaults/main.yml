@@ -91,12 +91,6 @@ nginx_keepalive: 32
 nginx_keepalive_requests: 100
 nginx_keepalive_timeout: "300s"
 
-nginx_vhosts:
-  - servername: "{{ nginx_default_servername }}"
-    serverlisten: "{{ nginx_http_listen }}"
-    docroot: "{{ nginx_default_docroot }}"
-    extra_parameters: |
-      autoindex on;
 
 nginx_vhosts:
   - servername: "{{ nginx_default_servername }}"
