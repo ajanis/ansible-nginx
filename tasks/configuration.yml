@@ -95,3 +95,5 @@
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
   notify:
     - restart nginx
+
+- meta: flush_handlers
