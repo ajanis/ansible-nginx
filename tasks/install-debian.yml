@@ -4,7 +4,7 @@
   apt_key:
     url: "{{ nginx_upstream_repo_key }}"
     state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
-  when: 
+  when:
     - ansible_os_family == "Debian"
     - nginx_upstream_repo
 
@@ -12,7 +12,7 @@
   apt_repository:
     repo: "deb {{ nginx_upstream_repo_baseurl }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx"
     state: "{% if nginx_upstream_repo %}present{% else %}absent{% endif %}"
-  when: 
+  when:
     - ansible_os_family == "Debian"
     - nginx_upstream_repo
 
@@ -21,7 +21,7 @@
     name: "{{ nginx_ppa_reqs }}"
     state: latest
     update_cache: yes
-  when: 
+  when:
     - ansible_os_family == "Debian"
     - not nginx_upstream_repo
 
@@ -29,7 +29,7 @@
   apt_repository:
     repo: "{{ nginx_pkgs_ppa }}"
     state: "{% if not nginx_upstream_repo %}present{% else %}absent{% endif %}"
-  when: 
+  when:
     - ansible_os_family == "Debian"
     - not nginx_upstream_repo
 
