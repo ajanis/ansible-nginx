@@ -17,7 +17,7 @@
   template:
     src: "fail2ban/fail2ban.local.j2"
     dest: "/etc/fail2ban/fail2ban.local"
- register: fail2ban_local_update
+  register: fail2ban_local_update
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban Jail Local Config"
   template:
