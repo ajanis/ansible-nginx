@@ -1,6 +1,7 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
+{% if nginx_vhosts_ssl is defined and nginx_vhosts_ssl != None %}
 {% for vhost in nginx_vhosts_ssl %}
 server {
     listen {{ vhost.serverlisten | default(nginx_https_listen) }} ssl http2;
@@ -50,3 +51,4 @@ server {
 {% endfor %}
     }
 {% endfor %}
+{% endif %}

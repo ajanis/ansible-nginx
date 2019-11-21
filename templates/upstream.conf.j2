@@ -1,5 +1,5 @@
 # {{ ansible_managed }}
-
+{% if nginx_backends is defined and nginx_backends != None %}
 {% for backend in nginx_backends %}
 upstream {{ backend.service }} {
 {% for host in backend.servers %}
@@ -8,3 +8,4 @@ upstream {{ backend.service }} {
 	keepalive {{ nginx_keepalive }};
 }
 {% endfor %}
+{% endif %}

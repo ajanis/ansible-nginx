@@ -13,7 +13,7 @@ server {
         deny all;
         }
     }
-
+{% if nginx_vhosts is defined and nginx_vhosts != None %}
 {% for vhost in nginx_vhosts %}
 server {
     listen {{ vhost.serverlisten | default(nginx_http_listen) }};
@@ -60,3 +60,4 @@ server {
 {% endfor %}
     }
 {% endfor %}
+{% endif %}
