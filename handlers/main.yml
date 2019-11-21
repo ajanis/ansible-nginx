@@ -1,8 +1,7 @@
 ---
 - name: restart nginx
-  service:
-    name: nginx
-    state: restarted
+  set_fact:
+    nginx_require_restart: True
 
 - name: restart fail2ban
   service:
