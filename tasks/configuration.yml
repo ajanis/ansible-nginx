@@ -104,7 +104,7 @@
     state: restarted
     enabled: yes
   register: nginx_restarted
-  when: nginx_require_restart
+  when: nginx_require_restart is defined and nginx_require_restart
 
 - name: Verify the nginx service is listening
   wait_for:
