@@ -16,7 +16,7 @@
     group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
-  register: ssl_key_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Install SSL Certificate Chain"
   copy:
@@ -26,7 +26,7 @@
     group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
-  register: ssl_cert_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Remove default vhost configs"
   file:
@@ -39,72 +39,60 @@
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
-  register: nginx_conf_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX vhost proxy template"
   template:
     src: proxy.conf.j2
     dest: /etc/nginx/proxy.conf
-  register: vhost_proxy_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX vhost proxy-cache template"
   template:
     src: proxy-cache.conf.j2
     dest: /etc/nginx/proxy-cache.conf
-  register: vhost_proxycache_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build ssl.conf template"
   template:
     src: ssl.conf.j2
     dest: /etc/nginx/ssl.conf
-  register: ssl_conf_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX Backend template"
   template:
     src: upstream.conf.j2
     dest: "{{ nginx_cfg_dir }}/upstream.conf"
-  register: upstream_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX Cache template"
   template:
     src: cache.conf.j2
     dest: "{{ nginx_cfg_dir }}/cache.conf"
-  register: cache_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX vhost template"
   template:
     src: default.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
-  register: vhost_conf_update
+  notify: "restart_nginx"
 
 - name: "[NGINX] :: Build NGINX SSL vhost template"
   template:
     src: default-ssl.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
-  register: vhost_sslconf_update
+  notify: "restart_nginx"
 
+- meta: flush_handlers
 
-- name: set update fact if any configs have been updated
-  set_fact:
-    nginx_require_restart: True
-  when: ssl_key_update.changed or
-        ssl_cert_update.changed or
-        nginx_conf_update.changed or
-        vhost_proxy_update.changed or
-        vhost_proxycache_update.changed or
-        ssl_conf_update.changed or
-        upstream_update.changed or
-        cache_update.changed or
-        vhost_conf_update.changed or
-        vhost_sslconf_update.changed
-
-- name: Restart the nginx service
+- name: Restart the nginx service if any configuration files have changed
   systemd:
     name: nginx
     state: restarted
     enabled: yes
+    daemon_reload: yes
   register: nginx_restarted
-  when: nginx_require_restart is defined and nginx_require_restart
+  when: nginx_require_restart | default(false)
 
 - name: Verify the nginx service is listening
   wait_for:
@@ -118,8 +106,9 @@
 - name: Get nginx journald logs if service does not appear to be up
   shell: journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx.service`
   register: nginx_journal
-  when: nginx_start_attempt.failed is defined and nginx_start_attempt.failed == True
-
+  when:
+    - nginx_start_attempt.failed | default(false)
 - fail:
     msg: "{{ nginx_journal.stdout_lines }}"
-  when: nginx_start_attempt.failed is defined and nginx_start_attempt.failed == True
+  when:
+    - nginx_start_attempt.failed | default(false)

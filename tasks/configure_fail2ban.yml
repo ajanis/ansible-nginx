@@ -11,32 +11,33 @@
   copy:
     src: "fail2ban/filter.d/"
     dest: "/etc/fail2ban/filter.d/"
-  register: fail2ban_filter_update
+  notify: "restart_fail2ban"
+
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban Local Config"
   template:
     src: "fail2ban/fail2ban.local.j2"
     dest: "/etc/fail2ban/fail2ban.local"
-  register: fail2ban_local_update
+  notify: "restart_fail2ban"
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban Jail Local Config"
   template:
     src: "fail2ban/jail.local.j2"
     dest: "/etc/fail2ban/jail.local"
-  register: fail2ban_jail_update
+  notify: "restart_fail2ban"
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban URLTable Action"
   template:
     src: "fail2ban/urltable_action.j2"
     dest: "/etc/fail2ban/action.d/urltable.conf"
-  register: fail2ban_action_update
+  notify: "restart_fail2ban"
 
-- name: Restart the fail2ban service
+- meta: flush_handlers
+
+- name: Restart the fail2ban service if any config files have changed
   systemd:
     name: fail2ban
     state: restarted
     enabled: yes
-  when: fail2ban_action_update.changed or
-        fail2ban_jail_update.changed or
-        fail2ban_local_update.changed or
-        fail2ban_filter_update.changed
+  when:
+    - fail2ban_require_restart | default(false)
