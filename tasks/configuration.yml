@@ -7,8 +7,6 @@
     mode: 0755
     owner: "{{ nginx_user }}"
     group: "{{ nginx_group }}"
-  notify:
-    - restart nginx
 
 - name: "[NGINX] :: Install SSL Key"
   copy:
@@ -18,8 +16,7 @@
     group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
-  notify:
-    - restart nginx
+  register: ssl_key_update
 
 - name: "[NGINX] :: Install SSL Certificate Chain"
   copy:
@@ -29,74 +26,77 @@
     group: root
     mode: 0640
   with_items: "{{ nginx_vhosts_ssl }}"
-  notify:
-    - restart nginx
+  register: ssl_cert_update
 
 - name: "[NGINX] :: Remove default vhost configs"
   file:
     path: "{{ item }}"
     state: absent
   with_items: "{{ nginx_default_site }}"
-  notify:
-    - restart nginx
+
 
 - name: "[NGINX] :: Build nginx.conf template"
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
-  notify:
-    - restart nginx
+  register: nginx_conf_update
 
 - name: "[NGINX] :: Build NGINX vhost proxy template"
   template:
     src: proxy.conf.j2
     dest: /etc/nginx/proxy.conf
-  notify:
-    - restart nginx
+  register: vhost_proxy_update
 
 - name: "[NGINX] :: Build NGINX vhost proxy-cache template"
   template:
     src: proxy-cache.conf.j2
     dest: /etc/nginx/proxy-cache.conf
-  notify:
-    - restart nginx
+  register: vhost_proxycache_update
 
 - name: "[NGINX] :: Build ssl.conf template"
   template:
     src: ssl.conf.j2
     dest: /etc/nginx/ssl.conf
-  notify:
-    - restart nginx
+  register: ssl_conf_update
 
 - name: "[NGINX] :: Build NGINX Backend template"
   template:
     src: upstream.conf.j2
     dest: "{{ nginx_cfg_dir }}/upstream.conf"
-  notify:
-    - restart nginx
+  register: upstream_update
 
 - name: "[NGINX] :: Build NGINX Cache template"
   template:
     src: cache.conf.j2
     dest: "{{ nginx_cfg_dir }}/cache.conf"
-  notify:
-    - restart nginx
+  register: cache_update
 
 - name: "[NGINX] :: Build NGINX vhost template"
   template:
     src: default.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
-  notify:
-    - restart nginx
+  register: vhost_conf_update
 
 - name: "[NGINX] :: Build NGINX SSL vhost template"
   template:
     src: default-ssl.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
-  notify:
-    - restart nginx
+  register: vhost_sslconf_update
 
-- meta: flush_handlers
+
+- name: set update fact if any configs have been updated
+  set_fact:
+    nginx_require_restart: True
+  when: ssl_key_update.changed or
+        ssl_cert_update.changed or
+        nginx_conf_update.changed or
+        vhost_proxy_update.changed or
+        vhost_proxycache_update.changed or
+        ssl_conf_update.changed or
+        upstream_update.changed or
+        cache_update.changed or
+        vhost_conf_update.changed or
+        vhost_sslconf_update.changed
 
 - name: Restart the nginx service
   systemd:
