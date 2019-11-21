@@ -94,7 +94,7 @@ nginx_keepalive_timeout: "300s"
 
 nginx_vhosts:
   - servername: "{{ nginx_default_servername }}"
-    serveralias: "{{ ansible_eth0.ipv4.address }}"
+    serveralias: "{{ ansible_default_ipv4.address }}"
     serverlisten: "{{ nginx_http_listen }}"
     locations:
       - name: /
