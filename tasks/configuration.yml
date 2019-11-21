@@ -97,3 +97,29 @@
     - restart nginx
 
 - meta: flush_handlers
+
+- name: Restart the nginx service
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+  register: nginx_restarted
+  when: nginx_config_copy is changed
+
+- name: Verify the nginx service is listening
+  wait_for:
+    host: localhost
+    port: 22
+    delay: 5
+  when: nginx_restarted is changed
+  ignore_errors: yes
+  register: nginx_start_attempt
+
+- name: Get nginx journald logs if service does not appear to be up
+  shell: journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx.service`
+  register: nginx_journal
+  when: nginx_start_attempt.failed is defined and nginx_start_attempt.failed == True
+
+- fail:
+    msg: "{{ nginx_journal.stdout_lines }}"
+  when: nginx_start_attempt.failed is defined and nginx_start_attempt.failed == True
