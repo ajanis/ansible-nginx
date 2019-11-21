@@ -102,18 +102,7 @@ nginx_vhosts:
         extra_parameters: |
           fancyindex on;
 
-nginx_vhosts_ssl:
-  - servername: "{{ nginx_default_servername }}"
-    serverlisten: "{{ nginx_https_listen }}"
-    ssl_certchain: "{{ ssl_cert }}"
-    ssl_privkey: "{{ ssl_key }}"
-    ssl_certpath: "/etc/ssl/certs/custom.pem"
-    ssl_keypath: "{/etc/ssl/private/custom.key"
-    locations:
-      - name: /
-        docroot: "/var/lib/www"
-        extra_parameters: |
-          fancyindex on;
+nginx_vhosts_ssl: []
 
 fail2ban_enable: False
 
