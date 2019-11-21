@@ -104,12 +104,12 @@
     state: restarted
     enabled: yes
   register: nginx_restarted
-  when: nginx_config_copy is changed
+  when: nginx_require_restart
 
 - name: Verify the nginx service is listening
   wait_for:
-    host: localhost
-    port: 22
+    host: "{{ ansible_default_ipv4.address }}"
+    port: "{{ nginx_http_listen }}"
     delay: 5
   when: nginx_restarted is changed
   ignore_errors: yes
