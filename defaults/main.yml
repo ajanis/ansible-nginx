@@ -1,7 +1,6 @@
 ---
 
-nginx_user: www-data
-nginx_group: www-data
+
 
 ssl_cert:
 ssl_key:
