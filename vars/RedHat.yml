@@ -4,8 +4,7 @@ nginx_upstream_repo_baseurl: "http://nginx.org/packages"
 nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
 
 nginx_pkgs:
-  - nginx-common
-  - nginx-extras
+  - nginx
 #  - libnginx-mod-http-fancyindex
 #  - php-fpm
 
