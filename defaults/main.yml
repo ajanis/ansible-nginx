@@ -98,8 +98,8 @@ nginx_vhosts:
     locations:
       - name: /
         docroot: "/var/lib/www"
-        extra_parameters: |
-          fancyindex on;
+#        extra_parameters: |
+#          fancyindex on;
 
 nginx_vhosts_ssl: []
 
