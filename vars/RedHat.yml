@@ -1,7 +1,7 @@
 ---
-nginx_upstream_repo: true
-nginx_upstream_repo_baseurl: "http://nginx.org/packages"
-nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
+#nginx_upstream_repo: true
+#nginx_upstream_repo_baseurl: "http://nginx.org/packages"
+#nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
 
 nginx_pkgs:
   - nginx
