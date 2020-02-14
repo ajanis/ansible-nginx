@@ -1,6 +1,6 @@
 ---
 
-- name: "[NGINX] :: create public_html directory"
+- name: "Ensure public_html directory exist"
   file:
     path: "{{ nginx_default_docroot }}"
     state: directory
@@ -8,7 +8,18 @@
     owner: "{{ nginx_user }}"
     group: "{{ nginx_group }}"
 
-- name: "[NGINX] :: Install SSL Key"
+- name: "Ensure SSL directories exist"
+  file:
+    path: "{{ item}}"
+    state: directory
+    mode: 0700
+    owner: "root"
+    group: "root"
+  loop:
+    - "{{ item.ssl_keypath | dirname }}"
+    - "{{ item.ssl_certpath | dirname }}"
+
+- name: "Install SSL Key"
   copy:
     content: "{{ item.ssl_privkey }}"
     dest: "{{ item.ssl_keypath }}"
@@ -18,7 +29,7 @@
   with_items: "{{ nginx_vhosts_ssl }}"
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Install SSL Certificate Chain"
+- name: "Install SSL Certificate Chain"
   copy:
     content: "{{ item.ssl_certchain }}"
     dest: "{{ item.ssl_certpath }}"
@@ -28,56 +39,56 @@
   with_items: "{{ nginx_vhosts_ssl }}"
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Remove default vhost configs"
+- name: "Remove default vhost configs"
   file:
     path: "{{ item }}"
     state: absent
   with_items: "{{ nginx_default_site }}"
 
 
-- name: "[NGINX] :: Build nginx.conf template"
+- name: "Build nginx.conf template"
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX vhost proxy template"
+- name: "Build NGINX vhost proxy template"
   template:
     src: proxy.conf.j2
     dest: /etc/nginx/proxy.conf
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX vhost proxy-cache template"
+- name: "Build NGINX vhost proxy-cache template"
   template:
     src: proxy-cache.conf.j2
     dest: /etc/nginx/proxy-cache.conf
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build ssl.conf template"
+- name: "Build ssl.conf template"
   template:
     src: ssl.conf.j2
     dest: /etc/nginx/ssl.conf
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX Backend template"
+- name: "Build NGINX Backend template"
   template:
     src: upstream.conf.j2
     dest: "{{ nginx_cfg_dir }}/upstream.conf"
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX Cache template"
+- name: "Build NGINX Cache template"
   template:
     src: cache.conf.j2
     dest: "{{ nginx_cfg_dir }}/cache.conf"
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX vhost template"
+- name: "Build NGINX vhost template"
   template:
     src: default.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
   notify: "restart_nginx"
 
-- name: "[NGINX] :: Build NGINX SSL vhost template"
+- name: "Build NGINX SSL vhost template"
   template:
     src: default-ssl.conf.j2
     dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
