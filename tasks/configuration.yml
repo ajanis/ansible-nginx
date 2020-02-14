@@ -8,16 +8,24 @@
     owner: "{{ nginx_user }}"
     group: "{{ nginx_group }}"
 
-- name: "Ensure SSL directories exist"
+
+- name: "Ensure SSL Cert directory exists"
   file:
-    path: "{{ item}}"
+    path: "{{ item.ssl_certpath | dirname }}"
     state: directory
-    mode: 0700
+    mode: 0755
     owner: "root"
     group: "root"
-  loop:
-    - "{{ item.ssl_keypath | dirname }}"
-    - "{{ item.ssl_certpath | dirname }}"
+  loop: "{{ nginx_vhosts_ssl }}"
+
+- name: "Ensure SSL Key directory exists"
+  file:
+    path: "{{ item.ssl_keypath | dirname }}"
+    state: directory
+    mode: 0640
+    owner: "root"
+    group: "root"
+  loop: "{{ nginx_vhosts_ssl }}"
 
 - name: "Install SSL Key"
   copy:
