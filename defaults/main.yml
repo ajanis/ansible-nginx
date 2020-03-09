@@ -100,6 +100,58 @@ nginx_vhosts:
 
 nginx_vhosts_ssl: []
 
+# SSL Vhost Example
+# nginx_vhosts_ssl:
+#   - servername: "automation.{{ www_domain }}"
+#     serverlisten: "443"
+#     ssl_certchain: "{{ vault_ssl_certchain }}"
+#     ssl_privkey: "{{ vault_ssl_privkey }}"
+#     ssl_certpath: "/etc/ssl/certs/my.crt"
+#     ssl_keypath: "/etc/ssl/certs/my.key"
+#     locations:
+#       - name: /
+#         proxy: True
+#         backend: automation
+#         extra_parameters: |
+#           proxy_http_version         1.1;
+#           proxy_set_header       Connection          "upgrade";
+#           proxy_set_header        upgrade             $http_upgrade;
+#       - name: /api/websocket
+#         proxy: True
+#         backend: automation/api/websocket
+#         extra_parameters: |
+#           proxy_http_version         1.1;
+#           proxy_set_header       Connection          "upgrade";
+#           proxy_set_header        upgrade             $http_upgrade;
+
+
+
+# The following Grok patterns can be used to parse the above-defined nginx 'main' access log format and the default fail2ban.log file
+
+nginx_accesslog_grokpattern: '%{CLIENT:client_ip} - %{NOTSPACE:ident} \[%{HTTPDATE:ts:ts-httpd}\] %{NOTSPACE:request_host:tag} "(?:%{WORD:verb:tag} %{NOTSPACE:request} (?:HTTP/%{NUMBER:http_version:float})?|%{DATA})" %{NUMBER:resp_code:tag} (?:%{NUMBER:resp_bytes:int}|-) "%{NOTSPACE:referrer}" "%{DATA:agent:tag}" (?:%{NUMBER:request_time}|-) (?:%{NUMBER:upstream_connect_time}|-) %{NOTSPACE:x_forwarded_for} %{NOTSPACE:upstream_cache_status:tag}'
+fail2ban_banlog_grokpattern: '%{TIMESTAMP_ISO8601:timestamp} %{WORD:log_src}.%{WORD:src_action} *\[%{INT:fail2ban_digit}\]: %{WORD:loglevel:tag} *\[%{NOTSPACE:service:tag}\] %{GREEDYDATA:ban_status:tag} %{IP:clientip:tag}'
+
+# Example with Telegraf 'logparser' input configuration
+#
+#- name: logparser
+#  options:
+#    files:
+#      - "/var/log/nginx/*.log"
+#    from_beginning: "false"
+#    grok:
+#      patterns:
+#        - '{{ nginx_accesslog_grokpattern }}'
+#      measurement: nginx_access_log
+#- name: logparser
+#  options:
+#    files:
+#      - "/var/log/fail2ban.log"
+#    from_beginning: "false"
+#    grok:
+#      patterns:
+#        - '{{ fail2ban_banlog_grokpattern }}'
+#      measurement: fail2ban_log
+
 fail2ban_enable: False
 
 fail2ban_loglevel: INFO
