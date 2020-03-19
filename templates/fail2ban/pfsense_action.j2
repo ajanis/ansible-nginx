@@ -12,6 +12,7 @@
 # Values:  CMD
 #
 actionban = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/local/sbin/pfSsh.php playback banip <ip> <name>"
+            ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo /sbin/pfctl -k '<ip>'"
 
 # Option:  actionunban
 # Notes.:  command executed when unbanning an IP. Take care that the
