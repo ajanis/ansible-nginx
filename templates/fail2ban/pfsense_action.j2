@@ -11,8 +11,7 @@
 # Tags:    See jail.conf(5) man page
 # Values:  CMD
 #
-actionban = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/local/sbin/pfSsh.php playback banip <ip> <name>"
-            ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo /sbin/pfctl -k '<ip>'"
+actionban = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo /usr/local/sbin/pfSsh.php playback banip <ip> <name>"
 
 # Option:  actionunban
 # Notes.:  command executed when unbanning an IP. Take care that the
@@ -20,4 +19,4 @@ actionban = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/
 # Tags:    See jail.conf(5) man page
 # Values:  CMD
 #
-actionunban =  ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/local/sbin/pfSsh.php playback unbanip <ip> <name>"
+actionunban =  ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo /usr/local/sbin/pfSsh.php playback unbanip <ip> <name>"
