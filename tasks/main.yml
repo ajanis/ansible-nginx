@@ -4,9 +4,13 @@
 
 - import_tasks: installation.yml
 - import_tasks: configuration.yml
+  tags:
+    - nginx-configure
 
 - import_tasks: install_fail2ban.yml
   when: fail2ban_enable
 
 - import_tasks: configure_fail2ban.yml
   when: fail2ban_enable
+  tags:
+    - fail2ban-configure
