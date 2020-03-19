@@ -1,0 +1,22 @@
+# Fail2Ban configuration file
+#
+# Author: Ajanis
+# Add/Remove IP from PFSense Alias using pfSSH.php
+
+[Definition]
+
+# Option:  actionban
+# Notes.:  command executed when banning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionban = ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/local/sbin/pfSsh.php playback banip <ip> <name>"
+
+# Option:  actionunban
+# Notes.:  command executed when unbanning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionunban =  ssh {{ fail2ban_pfsense_user }}@{{ fail2ban_pfsense_ip }} "sudo usr/local/sbin/pfSsh.php playback unbanip <ip> <name>"
