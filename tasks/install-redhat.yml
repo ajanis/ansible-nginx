@@ -41,3 +41,9 @@
   yum:
     name: "{{ nginx_pkgs }}"
     state: present
+
+- name: Enable NGINX service
+  systemd:
+    name: nginx
+    enabled: yes
+    daemon_reload: yes
