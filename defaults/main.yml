@@ -173,9 +173,10 @@ fail2ban_usedns: "warn"
 fail2ban_destemail: root@localhost
 
 fail2ban_banaction: iptables-multiport
+#fail2ban_banaction: pfsense
+#fail2ban_banaction: urltable
 
 # Custom PFSense pfSSH Ban Action
-#fail2ban_banaction: pfsense
 
 # Set these variables if using pfsense Ban Action
 #fail2ban_pfsense_ip:
