@@ -33,12 +33,16 @@
     src: "fail2ban/pfsense_action.j2"
     dest: "/etc/fail2ban/action.d/pfsense.conf"
   notify: "restart_fail2ban"
+  when:
+    - fail2ban_banaction == "pfsense"
 
 - name: "[FAIL2BAN] :: Copy Fail2Ban URLTable Action"
   template:
     src: "fail2ban/urltable_action.j2"
     dest: "/etc/fail2ban/action.d/urltable.conf"
   notify: "restart_fail2ban"
+  when:
+    - fail2ban_banaction == "urltable"
 
 - meta: flush_handlers
 
