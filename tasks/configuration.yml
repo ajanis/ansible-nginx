@@ -107,11 +107,11 @@
 - name: Restart the nginx service if any configuration files have changed
   systemd:
     name: nginx
-    state: restarted
+    state: "{% if nginx_require_restart %}started{% else %}restarted{% endif %}""
     enabled: yes
     daemon_reload: yes
   register: nginx_restarted
-  when: nginx_require_restart | default(false)
+  ignore_errors: yes
 
 - name: Verify the nginx service is listening
   wait_for:
