@@ -94,7 +94,7 @@ nginx_vhosts:
     serverlisten: "{{ nginx_http_listen }}"
     locations:
       - name: /
-        docroot: "/var/lib/www"
+        docroot: "/usr/share/nginx/html"
 #        extra_parameters: |
 #          fancyindex on;
 
