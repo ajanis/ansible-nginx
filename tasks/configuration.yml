@@ -1,107 +1,179 @@
 ---
+- name: Slurp ssl data from remote host
+  block:
+    - name: identify latest ssl directory
+      shell: ls -ltr /var/etc/acme-client/keys/| tail -n1 | awk '{print $NF}'
+      register: ssl_dir
+      delegate_to: "{{ ssl_slurp_remote_host }}"
+      delegate_facts: true
 
-- name: "Ensure public_html directory exist"
-  file:
-    path: "{{ nginx_default_docroot }}"
-    state: directory
-    mode: 0755
-    owner: "{{ nginx_user }}"
-    group: "{{ nginx_group }}"
+    - name: print ssl directory path
+      debug:
+        msg: "{{ ssl_dir.stdout }}"
+        verbosity: 1
+
+    - name: slurp ssl key contents
+      slurp:
+        src: /var/etc/acme-client/keys/{{ ssl_dir.stdout }}/private.key
+      register: slurp_prettybaked_wildcard_ssl_key
+      delegate_to: "{{ ssl_slurp_remote_host }}"
+      delegate_facts: true
+
+    - name: print ssl key content
+      debug:
+        msg: "{{ slurp_prettybaked_wildcard_ssl_key['content'] | b64decode }}"
+        verbosity: 1
+
+    - name: slurp ssl key contents
+      slurp:
+        src: /var/etc/acme-client/certs/{{ ssl_dir.stdout }}/fullchain.pem
+      register: slurp_prettybaked_wildcard_ssl_cert
+      delegate_to: "{{ ssl_slurp_remote_host }}"
+      delegate_facts: true
+
+    - name: print ssl cert contents
+      debug:
+        msg: "{{ slurp_prettybaked_wildcard_ssl_cert['content'] | b64decode }}"
+        verbosity: 1
+
+    - set_fact:
+        ssl_privkey: "{{ slurp_prettybaked_wildcard_ssl_key['content'] | b64decode }}"
+        ssl_certchain: "{{ slurp_prettybaked_wildcard_ssl_cert['content'] | b64decode }}"
+
+    - name: "Ensure mounted ssl directory exists"
+      file:
+        path: "{{ data_mount_root }}/ssl/"
+        state: directory
+        mode: 0640
+        owner: "{{ media_user_uid }}"
+        group: "{{ media_user_gid }}"
+
+    - name: "Install SSL Key"
+      copy:
+        content: "{{ ssl_privkey }}"
+        dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.key"
+        owner: "{{ media_user_uid }}"
+        group: "{{ media_user_gid }}"
+        mode: 0600
+
+    - name: "Install SSL Certificate Chain"
+      copy:
+        content: "{{ ssl_certchain }}"
+        dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.cert"
+        owner: "{{ media_user_uid }}"
+        group: "{{ media_user_gid }}"
+        mode: 0640
+  when:
+    - slurp_ssl_keys_from_remote|default(False)
+    - ssl_slurp_remote_host is defined
+    - ssl_slurp_remote_host != None
+  tags:
+    - nginx-ssl-slurp
+
+- name: Configure nginx directories and certificates
+  block:
+    - name: "Ensure public_html directory exist"
+      file:
+        path: "{{ nginx_default_docroot }}"
+        state: directory
+        mode: 0755
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+
+    - name: "Ensure SSL Cert directory exists"
+      file:
+        path: "{{ item.ssl_certpath | dirname }}"
+        state: directory
+        mode: 0755
+        owner: "root"
+        group: "root"
+      loop: "{{ nginx_vhosts_ssl }}"
+
+    - name: "Ensure SSL Key directory exists"
+      file:
+        path: "{{ item.ssl_keypath | dirname }}"
+        state: directory
+        mode: 0640
+        owner: "root"
+        group: "root"
+      loop: "{{ nginx_vhosts_ssl }}"
+
+    - name: "Install SSL Key"
+      copy:
+        content: "{{ item.ssl_privkey }}"
+        dest: "{{ item.ssl_keypath }}"
+        owner: root
+        group: root
+        mode: 0640
+      with_items: "{{ nginx_vhosts_ssl }}"
+      notify: "restart_nginx"
+
+    - name: "Install SSL Certificate Chain"
+      copy:
+        content: "{{ item.ssl_certchain }}"
+        dest: "{{ item.ssl_certpath }}"
+        owner: root
+        group: root
+        mode: 0640
+      with_items: "{{ nginx_vhosts_ssl }}"
+      notify: "restart_nginx"
+
+    - name: "Remove default vhost configs"
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items: "{{ nginx_default_site }}"
 
 
-- name: "Ensure SSL Cert directory exists"
-  file:
-    path: "{{ item.ssl_certpath | dirname }}"
-    state: directory
-    mode: 0755
-    owner: "root"
-    group: "root"
-  loop: "{{ nginx_vhosts_ssl }}"
+    - name: "Build nginx.conf template"
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: "restart_nginx"
 
-- name: "Ensure SSL Key directory exists"
-  file:
-    path: "{{ item.ssl_keypath | dirname }}"
-    state: directory
-    mode: 0640
-    owner: "root"
-    group: "root"
-  loop: "{{ nginx_vhosts_ssl }}"
+    - name: "Build NGINX vhost proxy template"
+      template:
+        src: proxy.conf.j2
+        dest: /etc/nginx/proxy.conf
+      notify: "restart_nginx"
 
-- name: "Install SSL Key"
-  copy:
-    content: "{{ item.ssl_privkey }}"
-    dest: "{{ item.ssl_keypath }}"
-    owner: root
-    group: root
-    mode: 0640
-  with_items: "{{ nginx_vhosts_ssl }}"
-  notify: "restart_nginx"
+    - name: "Build NGINX vhost proxy-cache template"
+      template:
+        src: proxy-cache.conf.j2
+        dest: /etc/nginx/proxy-cache.conf
+      notify: "restart_nginx"
 
-- name: "Install SSL Certificate Chain"
-  copy:
-    content: "{{ item.ssl_certchain }}"
-    dest: "{{ item.ssl_certpath }}"
-    owner: root
-    group: root
-    mode: 0640
-  with_items: "{{ nginx_vhosts_ssl }}"
-  notify: "restart_nginx"
+    - name: "Build ssl.conf template"
+      template:
+        src: ssl.conf.j2
+        dest: /etc/nginx/ssl.conf
+      notify: "restart_nginx"
 
-- name: "Remove default vhost configs"
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items: "{{ nginx_default_site }}"
+    - name: "Build NGINX Backend template"
+      template:
+        src: upstream.conf.j2
+        dest: "{{ nginx_cfg_dir }}/upstream.conf"
+      notify: "restart_nginx"
 
+    - name: "Build NGINX Cache template"
+      template:
+        src: cache.conf.j2
+        dest: "{{ nginx_cfg_dir }}/cache.conf"
+      notify: "restart_nginx"
 
-- name: "Build nginx.conf template"
-  template:
-    src: nginx.conf.j2
-    dest: /etc/nginx/nginx.conf
-  notify: "restart_nginx"
+    - name: "Build NGINX vhost template"
+      template:
+        src: default.conf.j2
+        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
+      notify: "restart_nginx"
 
-- name: "Build NGINX vhost proxy template"
-  template:
-    src: proxy.conf.j2
-    dest: /etc/nginx/proxy.conf
-  notify: "restart_nginx"
-
-- name: "Build NGINX vhost proxy-cache template"
-  template:
-    src: proxy-cache.conf.j2
-    dest: /etc/nginx/proxy-cache.conf
-  notify: "restart_nginx"
-
-- name: "Build ssl.conf template"
-  template:
-    src: ssl.conf.j2
-    dest: /etc/nginx/ssl.conf
-  notify: "restart_nginx"
-
-- name: "Build NGINX Backend template"
-  template:
-    src: upstream.conf.j2
-    dest: "{{ nginx_cfg_dir }}/upstream.conf"
-  notify: "restart_nginx"
-
-- name: "Build NGINX Cache template"
-  template:
-    src: cache.conf.j2
-    dest: "{{ nginx_cfg_dir }}/cache.conf"
-  notify: "restart_nginx"
-
-- name: "Build NGINX vhost template"
-  template:
-    src: default.conf.j2
-    dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
-  notify: "restart_nginx"
-
-- name: "Build NGINX SSL vhost template"
-  template:
-    src: default-ssl.conf.j2
-    dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
-  notify: "restart_nginx"
-
+    - name: "Build NGINX SSL vhost template"
+      template:
+        src: default-ssl.conf.j2
+        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
+      notify: "restart_nginx"
+  tags:
+    - nginx-vhost-config
 - meta: flush_handlers
 
 - name: Restart the nginx service if any configuration files have changed
