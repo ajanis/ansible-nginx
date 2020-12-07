@@ -50,7 +50,7 @@
           SSL private key: {{ ssl_privkey }}
           SSL certificate chain: {{ ssl_certchain }}
         verbosity: 1
-      no_log: True
+#      no_log: True
 
     - name: "Ensure mounted ssl directory exists"
       file:
@@ -60,7 +60,7 @@
         owner: "{{ media_user_uid }}"
         group: "{{ media_user_gid }}"
 
-    - name: "Install SSL Key"
+    - name: "Install SSL Key to mounted ssl directory for other applications to use"
       copy:
         content: "{{ ssl_privkey }}"
         dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.key"
@@ -68,7 +68,7 @@
         group: "{{ media_user_gid }}"
         mode: 0600
 
-    - name: "Install SSL Certificate Chain"
+    - name: "Install SSL Certificate Chain to mounted ssl directory for other applications to use"
       copy:
         content: "{{ ssl_certchain }}"
         dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.cert"
@@ -94,47 +94,55 @@
 
     - name: "Ensure SSL Cert directory exists"
       file:
-        path: "{{ item.ssl_certpath | dirname }}"
+        path: "{{ item|dirname }}"
         state: directory
         mode: 0755
         owner: "root"
         group: "root"
-      loop: "{{ nginx_vhosts_ssl }}"
+      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_certpath') | list | unique }}"
+      loop_control:
+        label: "{{ item|dirname }}"
 
     - name: "Ensure SSL Key directory exists"
       file:
-        path: "{{ item.ssl_keypath | dirname }}"
+        path: "{{ item|dirname }}"
         state: directory
         mode: 0640
         owner: "root"
         group: "root"
-      loop: "{{ nginx_vhosts_ssl }}"
+      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_keypath') | list | unique }}"
+      loop_control:
+        label: "{{ item|dirname }}"
 
-    - name: "Install SSL Key"
+    - name: "Install SSL Keys for all vhosts"
       copy:
         content: "{{ item.ssl_privkey }}"
         dest: "{{ item.ssl_keypath }}"
         owner: root
         group: root
         mode: 0640
-      with_items: "{{ nginx_vhosts_ssl }}"
+      loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.ssl_keypath }}"
       notify: "restart_nginx"
 
-    - name: "Install SSL Certificate Chain"
+    - name: "Install SSL Certificate Chains for all vhosts"
       copy:
         content: "{{ item.ssl_certchain }}"
         dest: "{{ item.ssl_certpath }}"
         owner: root
         group: root
         mode: 0640
-      with_items: "{{ nginx_vhosts_ssl }}"
+      loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.ssl_certpath }}"
       notify: "restart_nginx"
 
     - name: "Remove default vhost configs"
       file:
         path: "{{ item }}"
         state: absent
-      with_items: "{{ nginx_default_site }}"
+      loop: "{{ nginx_default_site }}"
 
 
     - name: "Build nginx.conf template"
@@ -192,12 +200,12 @@
 - name: Restart the nginx service if any configuration files have changed
   systemd:
     name: nginx
-    state: |
-      {% if nginx_require_restart|default(False) %}
+    state: |-
+      {%- if nginx_require_restart|default(False) -%}
       restarted
-      {% else %}
+      {%- else -%}
       started
-      {% endif %}
+      {%- endif -%}
     enabled: yes
     daemon_reload: yes
   register: nginx_restarted
