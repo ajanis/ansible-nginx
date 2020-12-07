@@ -2,7 +2,8 @@
 - name: Slurp ssl data from remote host
   block:
     - name: identify latest ssl directory
-      shell: ls -ltr /var/etc/acme-client/keys/| tail -n1 | awk '{print $NF}'
+      shell:
+        cmd: ls -ltr "{{ ssl_certgen_directory }}" | tail -n1 | awk '{print $NF}'
       register: ssl_dir
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
