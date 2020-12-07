@@ -35,7 +35,16 @@
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
 
-    - name: print ssl cert contents
+    - name: set encoded ssl cert contents as fact for later processing
+      set_fact:
+        encoded_ssl_cert: "{{ ssl_cert_contents['content'] }}"
+
+    - name: set decoded ssl key and cert chain as fact for future tasks
+      set_fact:
+        ssl_privkey: "{{ encoded_ssl_key | b64decode }}"
+        ssl_certchain: "{{ encoded_ssl_cert | b64decode }}"
+
+    - name: print decoded ssl key and certificate chain for debugging
       debug:
         msg: "{{ slurp_prettybaked_wildcard_ssl_cert['content'] | b64decode }}"
         verbosity: 1
