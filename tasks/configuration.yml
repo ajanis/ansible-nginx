@@ -19,8 +19,8 @@
 
     - name: slurp ssl key contents
       slurp:
-        src: /var/etc/acme-client/keys/{{ ssl_dir.stdout }}/private.key
-      register: slurp_prettybaked_wildcard_ssl_key
+        src: "{{ ssl_keygen_directory }}/{{ ssl_slurp_directory }}/private.key"
+      register: ssl_key_contents
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
 
