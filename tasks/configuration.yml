@@ -46,12 +46,11 @@
 
     - name: print decoded ssl key and certificate chain for debugging
       debug:
-        msg: "{{ slurp_prettybaked_wildcard_ssl_cert['content'] | b64decode }}"
+        msg: |
+          SSL private key: {{ ssl_privkey }}
+          SSL certificate chain: {{ ssl_certchain }}
         verbosity: 1
-
-    - set_fact:
-        ssl_privkey: "{{ slurp_prettybaked_wildcard_ssl_key['content'] | b64decode }}"
-        ssl_certchain: "{{ slurp_prettybaked_wildcard_ssl_cert['content'] | b64decode }}"
+      no_log: True
 
     - name: "Ensure mounted ssl directory exists"
       file:
