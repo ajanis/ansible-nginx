@@ -24,10 +24,9 @@
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
 
-    - name: print ssl key content
-      debug:
-        msg: "{{ slurp_prettybaked_wildcard_ssl_key['content'] | b64decode }}"
-        verbosity: 1
+    - name: set encoded ssl key contents as fact for later processing
+      set_fact:
+        encoded_ssl_key: "{{ ssl_key_contents['content'] }}"
 
     - name: slurp ssl key contents
       slurp:
