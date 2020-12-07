@@ -186,12 +186,18 @@
       notify: "restart_nginx"
   tags:
     - nginx-vhost-config
+
 - meta: flush_handlers
 
 - name: Restart the nginx service if any configuration files have changed
   systemd:
     name: nginx
-    state: "{% if nginx_require_restart|default(False) %}restarted{% else %}started{% endif %}"
+    state: |
+      {% if nginx_require_restart|default(False) %}
+      restarted
+      {% else %}
+      started
+      {% endif %}
     enabled: yes
     daemon_reload: yes
   register: nginx_restarted
