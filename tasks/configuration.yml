@@ -28,10 +28,10 @@
       set_fact:
         encoded_ssl_key: "{{ ssl_key_contents['content'] }}"
 
-    - name: slurp ssl key contents
+    - name: slurp ssl certificate chain contents
       slurp:
-        src: /var/etc/acme-client/certs/{{ ssl_dir.stdout }}/fullchain.pem
-      register: slurp_prettybaked_wildcard_ssl_cert
+        src: "{{ ssl_certgen_directory }}/{{ ssl_slurp_directory }}/fullchain.pem"
+      register: ssl_cert_contents
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
 
