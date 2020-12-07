@@ -14,7 +14,7 @@
 
     - name: print ssl generated file path for debugging
       debug:
-        msg: "{{ ssl_dir.stdout }}"
+        msg: "{{ ssl_slurp_directory }}"
         verbosity: 1
 
     - name: slurp ssl key contents
