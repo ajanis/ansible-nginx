@@ -8,7 +8,11 @@
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
 
-    - name: print ssl directory path
+    - name: set ssl generated file directory as fact for later processing
+      set_fact:
+        ssl_slurp_directory: "{{ ssl_dir.stdout }}"
+
+    - name: print ssl generated file path for debugging
       debug:
         msg: "{{ ssl_dir.stdout }}"
         verbosity: 1
