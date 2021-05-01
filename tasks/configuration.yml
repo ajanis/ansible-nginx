@@ -144,11 +144,21 @@
         state: absent
       loop: "{{ nginx_default_site }}"
 
-
     - name: "Build nginx.conf template"
       template:
         src: nginx.conf.j2
         dest: /etc/nginx/nginx.conf
+      notify: "restart_nginx"
+
+    - name: "Enable Modules"
+      template:
+        src: loadmodule.conf.j2
+        dest: "/etc/nginx/modules-enabled/{{ item }}.conf"
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+      loop: "{{ nginx_modules_enabled }}"
+      loop_control:
+        label: "{{ item }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX vhost proxy template"
