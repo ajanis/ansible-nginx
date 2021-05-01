@@ -88,6 +88,9 @@ nginx_keepalive: 32
 nginx_keepalive_requests: 100
 nginx_keepalive_timeout: "300s"
 
+nginx_module_pkgs: []
+
+nginx_modules_enabled: []
 
 nginx_vhosts:
   - servername: "{{ nginx_default_servername }}"

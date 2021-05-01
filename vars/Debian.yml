@@ -14,10 +14,6 @@ nginx_pkgs:
   - nginx-common
   - nginx-extras
 
-nginx_module_pkgs: []
-
-nginx_modules_enabled: []
-
 nginx_cfg_dir: /etc/nginx/conf.d
 nginx_default_site:
   - /etc/nginx/sites-enabled/default
