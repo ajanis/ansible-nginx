@@ -137,7 +137,11 @@
       loop_control:
         label: "{{ item.ssl_certpath }}"
       notify: "restart_nginx"
+  tags:
+    - nginx-ssl-config
 
+- name: Configure nginx configuration and vhost files
+  block:
     - name: "Remove default vhost configs"
       file:
         path: "{{ item }}"
