@@ -92,6 +92,21 @@
         owner: "{{ nginx_user }}"
         group: "{{ nginx_group }}"
 
+    - file:
+        state: directory
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+        dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
+        recurse: True
+      when: nginx_enable_rtmp
+
+    - file:
+        state: touch
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+        dest: "{{ nginx_hls_camera_feed_path }}"
+      when: nginx_enable_rtmp
+
     - name: "Ensure SSL Cert directory exists"
       file:
         path: "{{ item|dirname }}"
