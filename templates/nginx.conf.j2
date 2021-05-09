@@ -13,6 +13,21 @@ events {
     worker_connections  {{ nginx_worker_connections }};
 }
 
+{% if nginx_enable_rtmp %}
+rtmp {
+    server {
+        listen {{ nginx_rtmp_listen_port }};
+        application hls {
+            live on;
+            hls on;
+            hls_path {{ nginx_camera_feed_dir }};
+            hls_fragment 15s;
+            #exec_pull /usr/bin/ffmpeg -fflags {{ nginx_fflags }}
+        }
+    }
+}
+{% endif %}
+
 http {
 
     index   {% for i in nginx_index %}{{ i }}{% if not loop.last %} {% endif %}{% endfor %};
