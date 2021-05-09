@@ -29,6 +29,20 @@ nginx_log_format_main: |
   '$request_time $upstream_connect_time $http_x_forwarded_for $upstream_cache_status';
 
 nginx_access_log: "/var/log/nginx/access.log  main"
+nginx_enable_rtmp: False
+nginx_rtsp_camera_feed: 'rtsp://camera_ip:7447/stream1'
+nginx_hls_camera_feed_transcode_dir: /tmp/hls
+nginx_hls_segment_list_type: m3u8
+nginx_hls_camera_feed_index: "index.{{ nginx_hls_segment_list_type }}"
+nginx_hls_camera_feed_path: "{{ nginx_hls_camera_feed_transcode_dir }}/{{ nginx_hls_camera_feed_index }}"
+nginx_hls_listen_port: 1935
+nginx_hls_segment_format: mpegts
+nginx_hls_segment_list_entry_prefix: /stream/
+nginx_fflags: "-rtsp_transport tcp -i {{ nginx_rtsp_camera_feed }} -vsync 0  -copyts  -vcodec copy  -movflags frag_keyframe+empty_moov  -an  -hls_flags delete_segments+append_list  -f segment  -segment_list_flags live  -segment_time 1 -segment_list_size 3  -segment_format {{ nginx_hls_segment_format }} -segment_list {{ nginx_hls_camera_feed_path }}  -segment_list_type {{ nginx_hls_segment_list_type }}  -segment_list_entry_prefix {{ nginx_hls_segment_list_entry_prefix }}  {{ nginx_hls_camera_feed_transcode_dir }}/%d.ts"
+
+nginx_module_pkgs: []
+
+nginx_modules_enabled: []
 
 nginx_worker_processes: "32"
 nginx_worker_connections: "1024"
@@ -88,9 +102,6 @@ nginx_keepalive: 32
 nginx_keepalive_requests: 100
 nginx_keepalive_timeout: "300s"
 
-nginx_module_pkgs: []
-
-nginx_modules_enabled: []
 
 nginx_vhosts:
   - servername: "{{ nginx_default_servername }}"
