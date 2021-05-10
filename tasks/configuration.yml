@@ -1,4 +1,33 @@
 ---
+- name: Configure nginx data directories
+  block:
+    - name: "Ensure public_html directory exist"
+      file:
+        path: "{{ nginx_default_docroot }}"
+        state: directory
+        mode: 0755
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+
+    - name: "create camera feed transcode directory"
+      file:
+        state: directory
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_group }}"
+        dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
+        recurse: True
+      when: nginx_enable_rtmp
+
+    - name: "create camera feed index file"
+      file:
+        state: touch
+        owner: root
+        group: root
+        dest: "{{ nginx_hls_camera_transcode_path }}"
+      when: nginx_enable_rtmp
+  tags:
+    - nginx-data-directories
+
 - name: Slurp ssl data from remote host
   block:
     - name: identify latest ssl directory
@@ -82,31 +111,8 @@
   tags:
     - nginx-ssl-slurp
 
-- name: Configure nginx directories and certificates
+- name: Configure nginx ssl directories and certificates
   block:
-    - name: "Ensure public_html directory exist"
-      file:
-        path: "{{ nginx_default_docroot }}"
-        state: directory
-        mode: 0755
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
-
-    - file:
-        state: directory
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
-        dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
-        recurse: True
-      when: nginx_enable_rtmp
-
-    - file:
-        state: touch
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
-        dest: "{{ nginx_hls_camera_feed_path }}"
-      when: nginx_enable_rtmp
-
     - name: "Ensure SSL Cert directory exists"
       file:
         path: "{{ item|dirname }}"
@@ -173,8 +179,6 @@
       template:
         src: loadmodule.conf.j2
         dest: "/etc/nginx/modules-enabled/{{ item }}.conf"
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
       loop: "{{ nginx_modules_enabled }}"
       loop_control:
         label: "{{ item }}"
