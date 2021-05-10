@@ -20,9 +20,9 @@ rtmp {
         application hls {
             live on;
             hls on;
-            hls_path {{ nginx_camera_feed_dir }};
+            hls_path {{ nginx_hls_camera_feed_transcode_dir }};
             hls_fragment 15s;
-            #exec_pull /usr/bin/ffmpeg -fflags {{ nginx_fflags }}
+            exec /usr/bin/ffmpeg -fflags {{ nginx_fflags }};
         }
     }
 }
