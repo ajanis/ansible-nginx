@@ -196,9 +196,9 @@ fail2ban_socket: /var/run/fail2ban/fail2ban.sock
 fail2ban_pidfile: /var/run/fail2ban/fail2ban.pid
 fail2ban_sendername: 'Fail2ban'
 fail2ban_ignoreips:
- - 127.0.0.1/8
- - 10.0.0.0/8
- - 192.168.0.0/8
+  - 127.0.0.1/8
+  - 10.0.0.0/8
+  - 192.168.0.0/8
 fail2ban_bantime: 1h
 fail2ban_maxretry: 3
 fail2ban_findtime: 5m
