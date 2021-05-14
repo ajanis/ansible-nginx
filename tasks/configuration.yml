@@ -11,27 +11,33 @@
   tags:
     - nginx-data-directories
 
+- import_tasks: enable_rtmp.yml
+  when: nginx_enable_rtmp|default(False)
+  tags:
+    - nginx-configure-rtmp
+
 - name: Slurp ssl data from remote host
   block:
-    - name: identify latest ssl directory
-      shell:
-        cmd: ls -ltr "{{ ssl_certgen_directory }}" | tail -n1 | awk '{print $NF}'
-      register: ssl_dir
-      delegate_to: "{{ ssl_slurp_remote_host }}"
-      delegate_facts: true
+#    - name: identify latest ssl key
+#      shell:
+#
+#        cmd: ls -ltr "{{ ssl_certgen_directory }}" | tail -n1 | awk '{print $NF}'
+#      register: ssl_dir
+#      delegate_to: "{{ ssl_slurp_remote_host }}"
+#      delegate_facts: true
+#
+#    - name: set ssl generated file directory as fact for later processing
+#      set_fact:
+#        ssl_slurp_directory: "{{ ssl_dir.stdout }}"
+#
+#    - name: print ssl generated file path for debugging
+#      debug:
+#        msg: "{{ ssl_slurp_directory }}"
+#        verbosity: 1
 
-    - name: set ssl generated file directory as fact for later processing
-      set_fact:
-        ssl_slurp_directory: "{{ ssl_dir.stdout }}"
-
-    - name: print ssl generated file path for debugging
-      debug:
-        msg: "{{ ssl_slurp_directory }}"
-        verbosity: 1
-
-    - name: slurp ssl key contents
+    - name: slurp latest ssl key contents
       slurp:
-        src: "{{ ssl_keygen_directory }}/{{ ssl_slurp_directory }}/private.key"
+        src: "{{ ssl_key_slurp_path }}"
       register: ssl_key_contents
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
@@ -40,9 +46,9 @@
       set_fact:
         encoded_ssl_key: "{{ ssl_key_contents['content'] }}"
 
-    - name: slurp ssl certificate chain contents
+    - name: slurp latest ssl certificate chain contents
       slurp:
-        src: "{{ ssl_certgen_directory }}/{{ ssl_slurp_directory }}/fullchain.pem"
+        src: "{{ ssl_cert_slurp_path }}"
       register: ssl_cert_contents
       delegate_to: "{{ ssl_slurp_remote_host }}"
       delegate_facts: true
@@ -89,8 +95,9 @@
         mode: 0640
   when:
     - slurp_ssl_keys_from_remote|default(False)
-    - ssl_slurp_remote_host is defined
-    - ssl_slurp_remote_host != None
+    - ssl_slurp_remote_host|length > 0
+    - ssl_cert_slurp_path|length > 0
+    - ssl_key_slurp_path|length > 0
   tags:
     - nginx-ssl-slurp
 
