@@ -1,5 +1,5 @@
 ---
-- name: Configure nginx data directories
+- name: Configure nginx public_html directory
   block:
     - name: "Ensure public_html directory exist"
       file:
@@ -8,23 +8,6 @@
         mode: 0755
         owner: "{{ nginx_user }}"
         group: "{{ nginx_group }}"
-
-    - name: "create camera feed transcode directory"
-      file:
-        state: directory
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
-        dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
-        recurse: True
-      when: nginx_enable_rtmp
-
-    - name: "create camera feed index file"
-      file:
-        state: touch
-        owner: root
-        group: root
-        dest: "{{ nginx_hls_camera_transcode_path }}"
-      when: nginx_enable_rtmp
   tags:
     - nginx-data-directories
 

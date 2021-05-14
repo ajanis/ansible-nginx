@@ -30,8 +30,10 @@ nginx_log_format_main: |
 
 nginx_access_log: "/var/log/nginx/access.log  main"
 
+
 nginx_enable_rtmp: False
 nginx_rtmp_listen_port: 1935
+nginx_rtsp_transport_proto: tcp
 nginx_rtsp_camera_feed: 'rtsp://camera_ip:7447/stream1'
 nginx_hls_camera_feed_transcode_dir: /tmp/hls
 nginx_hls_camera_transcode_index: "index.{{ nginx_hls_segment_list_type }}"
@@ -39,7 +41,22 @@ nginx_hls_camera_transcode_path: "{{ nginx_hls_camera_feed_transcode_dir }}/{{ n
 nginx_hls_segment_list_type: m3u8
 nginx_hls_segment_format: mpegts
 nginx_hls_segment_list_entry_prefix: /stream/
-nginx_fflags: "-rtsp_transport tcp -i {{ nginx_rtsp_camera_feed }} -vsync 0  -copyts  -vcodec copy  -movflags frag_keyframe+empty_moov  -an  -hls_flags delete_segments+append_list  -f segment  -segment_list_flags live  -segment_time 1 -segment_list_size 3  -segment_format {{ nginx_hls_segment_format }} -segment_list {{ nginx_hls_camera_transcode_path }}  -segment_list_type {{ nginx_hls_segment_list_type }}  -segment_list_entry_prefix {{ nginx_hls_segment_list_entry_prefix }}  {{ nginx_hls_camera_feed_transcode_dir }}/%d.ts"
+
+nginx_fflags_hls_flags: |
+  -hls_flags delete_segments+append_list -f segment  -segment_list_flags live \
+  -segment_time 1 -segment_list_size 3  -segment_format {{ nginx_hls_segment_format }} \
+  -segment_list {{ nginx_hls_camera_transcode_path }}  -segment_list_type {{ nginx_hls_segment_list_type }} \
+  -segment_list_entry_prefix {{ nginx_hls_segment_list_entry_prefix }} {{ nginx_hls_camera_feed_transcode_dir }}/%d.ts
+
+nginx_fflags_movflags: '-movflags frag_keyframe+empty_moov -an'
+
+nginx_fflags: '-fflags nobuffer -rtsp_transport tcp -i {{ nginx_rtsp_camera_feed }} -vsync 0 -copyts -vcodec copy'
+
+nginx_rtmp_ffmpeg_command: |
+  {{ nginx_ffmpeg_path }} \
+  {{ nginx_fflags }} \
+  {{ nginx_fflags_movflags }} \
+  {{ nginx_fflags_hls_flags }}
 
 nginx_module_pkgs: []
 

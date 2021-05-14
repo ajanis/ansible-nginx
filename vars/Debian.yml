@@ -23,3 +23,5 @@ nginx_default_site:
 
 nginx_user: www-data
 nginx_group: www-data
+
+nginx_ffmpeg_path: /usr/bin/ffmpeg
