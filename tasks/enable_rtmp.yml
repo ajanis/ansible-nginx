@@ -1,4 +1,4 @@
-- name: Configure nginx data directories
+- name: Configure rtmp transcode data directories
   block:
     - name: "create camera feed transcode directory"
       file:
@@ -29,6 +29,7 @@
       register: ffmpeg_transcode_service
     - name: enable ffmpeg transcode service
       systemd:
+        name: ffmpeg_transcode
         state: "{% if ffmpeg_transcode_service.changed %}restarted{% else %}started{% endif %}"
         enabled: yes
         daemon_reload: yes
