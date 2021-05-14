@@ -1,4 +1,8 @@
 ---
+slurp_ssl_keys_from_remote: False
+ssl_slurp_remote_host:
+ssl_cert_slurp_path:
+ssl_key_slurp_path:
 ssl_cert:
 ssl_key:
 ssl_certgen_directory:
