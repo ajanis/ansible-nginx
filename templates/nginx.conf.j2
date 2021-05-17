@@ -17,11 +17,11 @@ events {
 rtmp {
     server {
         listen {{ nginx_rtmp_listen_port }};
+        chunk_size 4000;
         application hls {
             live on;
             hls on;
             hls_path {{ nginx_hls_camera_feed_transcode_dir }};
-            hls_fragment 15s;
         }
     }
 }
