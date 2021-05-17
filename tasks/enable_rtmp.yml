@@ -7,12 +7,12 @@
         group: "{{ nginx_group }}"
         dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
 
-    - name: "create camera feed index file"
-      file:
-        state: touch
-        owner: root
-        group: root
-        dest: "{{ nginx_hls_camera_transcode_path }}"
+#    - name: "create camera feed index file"
+#      file:
+#        state: touch
+#        owner: root
+#        group: root
+#        dest: "{{ nginx_hls_camera_transcode_path }}"
 
 - name: Create transcode script and service
   block:
