@@ -1,9 +1,14 @@
 [Unit]
 Description=FFMPEG Transcode service for RTSP camera feeds to RTMP Files and HLS Webservice
 After=network.target
-{% if shared_storage  %}
+Before=nginx.service
+
+{% if shared_storage and ( data_mount_root in nginx_hls_camera_feed_transcode_dir ) %}
 # Ensure shared storage is mounted
 ConditionPathIsMountPoint={{ data_mount_root }}
+# Require before starting and trigger reloads and stops from shared storage mount
+Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount
+ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount
 {% endif %}
 
 [Service]
@@ -13,4 +18,4 @@ WorkingDirectory={{ nginx_hls_camera_feed_transcode_dir }}
 ExecStart=/usr/local/bin/rtsp_to_rtmp_transcode.sh
 RestartSec=1min
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target nginx.service
