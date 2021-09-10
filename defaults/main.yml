@@ -57,7 +57,7 @@ nginx_fflags: |
   {{ nginx_hls_camera_feed_transcode_dir }}/%d.ts > /var/log/ffmpeg 2>&1
 
 nginx_rtmp_ffmpeg_command: "{{ nginx_ffmpeg_path }} -fflags {{ nginx_fflags }}"
-
+nginx_ffmpeg_path: /usr/bin/ffmpeg
 nginx_module_pkgs: []
 
 nginx_modules_enabled: []
