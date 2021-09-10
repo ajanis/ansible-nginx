@@ -6,8 +6,8 @@
         path: "{{ nginx_default_docroot }}"
         state: directory
         mode: 0755
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_group }}"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
   tags:
     - nginx-data-directories
 
@@ -18,23 +18,6 @@
 
 - name: Slurp ssl data from remote host
   block:
-#    - name: identify latest ssl key
-#      shell:
-#
-#        cmd: ls -ltr "{{ ssl_certgen_directory }}" | tail -n1 | awk '{print $NF}'
-#      register: ssl_dir
-#      delegate_to: "{{ ssl_slurp_remote_host }}"
-#      delegate_facts: true
-#
-#    - name: set ssl generated file directory as fact for later processing
-#      set_fact:
-#        ssl_slurp_directory: "{{ ssl_dir.stdout }}"
-#
-#    - name: print ssl generated file path for debugging
-#      debug:
-#        msg: "{{ ssl_slurp_directory }}"
-#        verbosity: 1
-
     - name: slurp latest ssl key contents
       slurp:
         src: "{{ ssl_key_slurp_path }}"
