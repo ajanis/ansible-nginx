@@ -1,6 +1,4 @@
 ---
-
-
 nginx_upstream_repo: True
 nginx_upstream_repo_baseurl: "http://nginx.org/packages"
 nginx_upstream_repo_key: "http://nginx.org/keys/nginx_signing.key"
@@ -21,7 +19,6 @@ nginx_default_site:
   - /etc/nginx/conf.d/default.conf
   - /etc/nginx/conf.d/example_ssl.conf
 
-nginx_user: www-data
-nginx_group: www-data
+nginx_default_user: www-data
+nginx_default_group: www-data
 
-nginx_ffmpeg_path: /usr/bin/ffmpeg
