@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 
-user              {{ nginx_user }} {{ nginx_group }};
+user              {{ nginx_user|default(nginx_default_user) }} {{ nginx_group|default(nginx_default_group) }};
 worker_processes  {{ nginx_worker_processes }};
 worker_rlimit_nofile {{ nginx_worker_rlimit_nofile }};
 

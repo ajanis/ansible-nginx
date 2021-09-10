@@ -1,9 +1,9 @@
 [www]
-user = {{ nginx_user }}
-group = {{ nginx_group }}
+user = {{ nginx_user|default(nginx_default_user) }}
+group = {{ nginx_group|default(nginx_default_group) }}
 listen = /run/php/php7.2-fpm.sock
-listen.owner = {{ nginx_user }}
-listen.group = {{ nginx_group }}
+listen.owner = {{ nginx_user|default(nginx_default_user) }}
+listen.group = {{ nginx_group|default(nginx_default_group) }}
 pm = dynamic
 pm.max_children = 5
 pm.start_servers = 2
