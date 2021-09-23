@@ -37,7 +37,7 @@ server {
 {% endif %}
 {% if location.proxy is defined and location.proxy %}
         include /etc/nginx/proxy.conf;
-        proxy_pass http://{{ location.backend }};
+        proxy_pass {{ location.proxypass_protocol|default('http://')}}{{ location.backend }};
 {% if location.custom_css is defined %}
         proxy_set_header Accept-Encoding "";
         sub_filter
