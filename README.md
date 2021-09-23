@@ -38,6 +38,12 @@ fail2ban_ssh_private_key:
 
 ## Role Variables
 
+**NOTE**  
+Any vhost's `location.proxy` will perform a reverse proxy if:  
+- `location.proxy` is `True`  
+- `lcoation.proxy` is a schema/protocol string (i.e. `https://`, `wss://`) - there is no validation on this field when a
+  string, it is your responsibility to ensure it is properly formatted for your use case.
+
 ### defaults/main.yml
 
 ```yaml
