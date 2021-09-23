@@ -26,7 +26,7 @@ server {
 {% if location.extra_parameters is defined and location.extra_parameters != None %}
         {{ location.extra_parameters|indent(8, False) }}
 {% endif %}
-{% if (location.proxy | default(False)) is boolean or (location.proxy | default(False)) is string  %}
+{% if ((location.proxy | default(False) is sameas True)) or (location.proxy | default(False)) is string  %}
         include /etc/nginx/proxy.conf;
         proxy_pass {{ (location.proxy is string and location.proxy) or 'http://' }}{{ location.backend }};
 {% if location.custom_css is defined %}

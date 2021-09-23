@@ -545,7 +545,7 @@ nginx_vhosts:
           proxy_set_header       Connection          "upgrade";
           proxy_set_header        upgrade             $http_upgrade;
       - name: /api/websocket
-        proxy: "wws://"
+        proxy: "wss://"
         backend: automation/api/websocket
         extra_parameters: |
           proxy_http_version         1.1;
