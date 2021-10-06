@@ -35,9 +35,11 @@ server {
 {% if location.extra_parameters is defined and location.extra_parameters != None %}
         {{ location.extra_parameters|indent(8, False) }}
 {% endif %}
-{% if location.proxy is defined and location.proxy %}
+{# If location.proxy === True or a non-empty string, proxy the request #}
+{% if ((location.proxy | default(False) is sameas True)) or (location.proxy | default(False)) is string  %}
         include /etc/nginx/proxy.conf;
-        proxy_pass {{ location.proxypass_protocol }}{{ location.backend }};
+        {# If location.proxy is a string, it is assumed to be a properly formatted scheme/protocol, if it is True then default to 'http://' #}
+        proxy_pass {{ (location.proxy is string) | ternary(location.proxy, 'http://') }}{{ location.backend }};
 {% if location.custom_css is defined %}
         proxy_set_header Accept-Encoding "";
         sub_filter
