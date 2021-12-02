@@ -239,3 +239,5 @@ fail2ban_services:
 nginx_allowed_ports:
   - "80/tcp"
   - "443/tcp"
+
+nginx_symlinks: []
