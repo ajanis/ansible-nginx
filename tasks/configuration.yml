@@ -8,133 +8,20 @@
         mode: 0755
         owner: "{{ nginx_user|default(nginx_default_user) }}"
         group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
+    - name: "Create symlinks for services like PXE"
+      file:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+        mode: 0755
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
+      loop: "{{ nginx_symlinks }}"
+      when: nginx_symlinks | length > 0
   tags:
     - nginx-data-directories
 
-- import_tasks: enable_rtmp.yml
-  when: nginx_enable_rtmp|default(False)
-  tags:
-    - nginx-configure-rtmp
-
-- name: Slurp ssl data from remote host
-  block:
-    - name: slurp latest ssl key contents
-      slurp:
-        src: "{{ ssl_key_slurp_path }}"
-      register: ssl_key_contents
-      delegate_to: "{{ ssl_slurp_remote_host }}"
-      delegate_facts: true
-
-    - name: set encoded ssl key contents as fact for later processing
-      set_fact:
-        encoded_ssl_key: "{{ ssl_key_contents['content'] }}"
-
-    - name: slurp latest ssl certificate chain contents
-      slurp:
-        src: "{{ ssl_cert_slurp_path }}"
-      register: ssl_cert_contents
-      delegate_to: "{{ ssl_slurp_remote_host }}"
-      delegate_facts: true
-
-    - name: set encoded ssl cert contents as fact for later processing
-      set_fact:
-        encoded_ssl_cert: "{{ ssl_cert_contents['content'] }}"
-
-    - name: set decoded ssl key and cert chain as fact for future tasks
-      set_fact:
-        ssl_privkey: "{{ encoded_ssl_key | b64decode }}"
-        ssl_certchain: "{{ encoded_ssl_cert | b64decode }}"
-
-    - name: print decoded ssl key and certificate chain for debugging
-      debug:
-        msg: |
-          SSL private key: {{ ssl_privkey }}
-          SSL certificate chain: {{ ssl_certchain }}
-        verbosity: 1
-#      no_log: True
-
-    - name: "Ensure mounted ssl directory exists"
-      file:
-        path: "{{ data_mount_root }}/ssl/"
-        state: directory
-        mode: 0640
-        owner: "{{ media_user_uid }}"
-        group: "{{ media_user_gid }}"
-
-    - name: "Install SSL Key to mounted ssl directory for other applications to use"
-      copy:
-        content: "{{ ssl_privkey }}"
-        dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.key"
-        owner: "{{ media_user_uid }}"
-        group: "{{ media_user_gid }}"
-        mode: 0600
-
-    - name: "Install SSL Certificate Chain to mounted ssl directory for other applications to use"
-      copy:
-        content: "{{ ssl_certchain }}"
-        dest: "{{ data_mount_root }}/ssl/{{ www_domain }}.cert"
-        owner: "{{ media_user_uid }}"
-        group: "{{ media_user_gid }}"
-        mode: 0640
-  when:
-    - slurp_ssl_keys_from_remote|default(False)
-    - ssl_slurp_remote_host|length > 0
-    - ssl_cert_slurp_path|length > 0
-    - ssl_key_slurp_path|length > 0
-  tags:
-    - nginx-ssl-slurp
-
-- name: Configure nginx ssl directories and certificates
-  block:
-    - name: "Ensure SSL Cert directory exists"
-      file:
-        path: "{{ item|dirname }}"
-        state: directory
-        mode: 0755
-        owner: "root"
-        group: "root"
-      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_certpath') | list | unique }}"
-      loop_control:
-        label: "{{ item|dirname }}"
-
-    - name: "Ensure SSL Key directory exists"
-      file:
-        path: "{{ item|dirname }}"
-        state: directory
-        mode: 0640
-        owner: "root"
-        group: "root"
-      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_keypath') | list | unique }}"
-      loop_control:
-        label: "{{ item|dirname }}"
-
-    - name: "Install SSL Keys for all vhosts"
-      copy:
-        content: "{{ item.ssl_privkey }}"
-        dest: "{{ item.ssl_keypath }}"
-        owner: root
-        group: root
-        mode: 0640
-      loop: "{{ nginx_vhosts_ssl }}"
-      loop_control:
-        label: "{{ item.ssl_keypath }}"
-      notify: "restart_nginx"
-
-    - name: "Install SSL Certificate Chains for all vhosts"
-      copy:
-        content: "{{ item.ssl_certchain }}"
-        dest: "{{ item.ssl_certpath }}"
-        owner: root
-        group: root
-        mode: 0640
-      loop: "{{ nginx_vhosts_ssl }}"
-      loop_control:
-        label: "{{ item.ssl_certpath }}"
-      notify: "restart_nginx"
-  tags:
-    - nginx-ssl-config
-
-- name: Configure nginx configuration and vhost files
+- name: Remove default nginx vhosts, update nginx.conf, proxy, caching, upstream and loaded modules
   block:
     - name: "Remove default vhost configs"
       file:
@@ -169,12 +56,6 @@
         dest: /etc/nginx/proxy-cache.conf
       notify: "restart_nginx"
 
-    - name: "Build ssl.conf template"
-      template:
-        src: ssl.conf.j2
-        dest: /etc/nginx/ssl.conf
-      notify: "restart_nginx"
-
     - name: "Build NGINX Backend template"
       template:
         src: upstream.conf.j2
@@ -187,19 +68,32 @@
         dest: "{{ nginx_cfg_dir }}/cache.conf"
       notify: "restart_nginx"
 
-    - name: "Build NGINX vhost template"
-      template:
-        src: default.conf.j2
-        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
-      notify: "restart_nginx"
+- import_tasks: enable_rtmp.yml
+  when: nginx_enable_rtmp|default(False)
+  tags:
+    - nginx-configure-rtmp
 
-    - name: "Build NGINX SSL vhost template"
-      template:
-        src: default-ssl.conf.j2
-        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
-      notify: "restart_nginx"
+- import_tasks: http_vhosts.yml
+  when:
+    -  ( nginx_vhosts | length > 0 ) | default('[]')
   tags:
     - nginx-vhost-config
+
+- import_tasks: ssl_slurp.yml
+  when:
+    - slurp_ssl_keys_from_remote|default(False)
+    - ssl_slurp_remote_host|length > 0
+    - ssl_cert_slurp_path|length > 0
+    - ssl_key_slurp_path|length > 0
+  tags:
+    - nginx-ssl-slurp
+
+- import_tasks: https_vhosts.yml
+  when:
+    - ( nginx_vhosts_ssl | length > 0 ) | default('[]')
+  tags:
+    - nginx-ssl-config
+
 
 - meta: flush_handlers
 
@@ -231,6 +125,7 @@
   register: nginx_journal
   when:
     - nginx_start_attempt.failed | default(false)
+
 - debug:
     msg: "{{ nginx_journal.stdout_lines }}"
   when:
