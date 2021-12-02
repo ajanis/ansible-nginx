@@ -1,0 +1,5 @@
+- name: "Build NGINX vhost template"
+  template:
+    src: default.conf.j2
+    dest: "{{ nginx_cfg_dir }}/{{ www_domain }}"
+  notify: "restart_nginx"

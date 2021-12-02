@@ -1,0 +1,61 @@
+- name: Configure nginx ssl directories and certificates
+  block:
+    - name: "Ensure SSL Cert directory exists"
+      file:
+        path: "{{ item|dirname }}"
+        state: directory
+        mode: 0755
+        owner: "root"
+        group: "root"
+      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_certpath') | list | unique }}"
+      loop_control:
+        label: "{{ item|dirname }}"
+
+    - name: "Ensure SSL Key directory exists"
+      file:
+        path: "{{ item|dirname }}"
+        state: directory
+        mode: 0640
+        owner: "root"
+        group: "root"
+      loop: "{{ nginx_vhosts_ssl|map(attribute='ssl_keypath') | list | unique }}"
+      loop_control:
+        label: "{{ item|dirname }}"
+
+    - name: "Install SSL Keys for all vhosts"
+      copy:
+        content: "{{ item.ssl_privkey }}"
+        dest: "{{ item.ssl_keypath }}"
+        owner: root
+        group: root
+        mode: 0640
+      loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.ssl_keypath }}"
+      notify: "restart_nginx"
+
+    - name: "Install SSL Certificate Chains for all vhosts"
+      copy:
+        content: "{{ item.ssl_certchain }}"
+        dest: "{{ item.ssl_certpath }}"
+        owner: root
+        group: root
+        mode: 0640
+      loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.ssl_certpath }}"
+      notify: "restart_nginx"
+
+    - name: "Build ssl.conf template"
+      template:
+        src: ssl.conf.j2
+        dest: /etc/nginx/ssl.conf
+      notify: "restart_nginx"
+
+    - name: "Build NGINX SSL vhost template"
+      template:
+        src: default-ssl.conf.j2
+        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
+      notify: "restart_nginx"
+
+
