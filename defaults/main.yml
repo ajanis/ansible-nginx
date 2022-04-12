@@ -59,7 +59,6 @@ nginx_fflags: |
 nginx_rtmp_ffmpeg_command: "{{ nginx_ffmpeg_path }} -fflags {{ nginx_fflags }}"
 nginx_ffmpeg_path: /usr/bin/ffmpeg
 nginx_module_pkgs: []
-
 nginx_modules_enabled: []
 
 nginx_worker_processes: "32"
