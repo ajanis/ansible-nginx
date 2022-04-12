@@ -11,8 +11,8 @@ nginx_ppa_repo: "ppa:nginx/stable"
 nginx_pkgs:
   - nginx-common
   - nginx-extras
-
-nginx_cfg_dir: /etc/nginx/conf.d
+nginx_base_cfg_dir: /etc/nginx
+nginx_conf_d_dir: "{{ nginx_base_cfg_dir }}/conf.d"
 nginx_default_site:
   - /etc/nginx/sites-enabled/default
   - /etc/nginx/sites-available/default
