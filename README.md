@@ -325,7 +325,7 @@ nginx_pkgs:
   - nginx-common
   - nginx-extras
 
-nginx_cfg_dir: /etc/nginx/conf.d
+nginx_conf_d_dir: /etc/nginx/conf.d
 nginx_default_site:
   - /etc/nginx/sites-enabled/default
   - /etc/nginx/sites-available/default
@@ -351,7 +351,7 @@ nginx_pkgs:
 #  - libnginx-mod-http-fancyindex
 #  - php-fpm
 
-nginx_cfg_dir: /etc/nginx/conf.d
+nginx_conf_d_dir: /etc/nginx/conf.d
 nginx_default_site:
   - /etc/nginx/conf.d/default.conf
 
