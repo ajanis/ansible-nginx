@@ -59,13 +59,25 @@
     - name: "Build NGINX Backend template"
       template:
         src: upstream.conf.j2
-        dest: "{{ nginx_cfg_dir }}/upstream.conf"
+        dest: "{{ nginx_conf_d_dir }}/upstream.conf"
       notify: "restart_nginx"
 
     - name: "Build NGINX Cache template"
       template:
         src: cache.conf.j2
-        dest: "{{ nginx_cfg_dir }}/cache.conf"
+        dest: "{{ nginx_conf_d_dir }}/cache.conf"
+      notify: "restart_nginx"
+
+    - name: "Build NGINX theme-park config template"
+      template:
+        src: theme-park-settings.conf.j2
+        dest: "{{ nginx_conf_d_dir }}/theme-park-settings.conf"
+      notify: "restart_nginx"
+
+    - name: "Build NGINX theme-park proxy/filter file"
+      template:
+        src: theme-park.conf.j2
+        dest: "{{ nginx_base_cfg_dir }}/theme-park.conf"
       notify: "restart_nginx"
 
 - import_tasks: enable_rtmp.yml
