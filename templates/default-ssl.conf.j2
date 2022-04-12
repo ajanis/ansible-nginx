@@ -21,23 +21,18 @@ server {
 {% for location in vhost.locations %}
     location {{ location.name }} {
 {% if location.docroot is defined and location.docroot != None %}
-        root {{ location.docroot }};
+        root {{ location.docroot|default('/') }};
 {% endif %}
 {% if location.extra_parameters is defined and location.extra_parameters != None %}
         {{ location.extra_parameters|indent(8, False) }}
 {% endif %}
 {# If location.proxy === True or a non-empty string, proxy the request #}
-{% if ((location.proxy | default(False) is sameas True)) or (location.proxy | default(False)) is string  %}
+{% if ((location.proxy | default(False) == True)) or ((location.proxy | default(False) is string))  %}
         include /etc/nginx/proxy.conf;
         {# If location.proxy is a string, it is assumed to be a properly formatted scheme/protocol, if it is True then default to 'http://' #}
         proxy_pass {{ (location.proxy is string) | ternary(location.proxy, 'http://') }}{{ location.backend }};
-{% if location.custom_css is defined %}
-        proxy_set_header Accept-Encoding "";
-        sub_filter
-        '</head>'
-        '<link rel="stylesheet" type="text/css" href="https://gilbn.github.io/theme.park/CSS/themes/{{ location.custom_css }}">
-        </head>';
-        sub_filter_once on;
+{% if location.custom_css|default('') | length > 0 %}
+        {{ location.custom_css|indent(8, False) }}
 {% endif %}
 {% if nginx_proxy_cache_enabled and nginx_proxy_cache is defined and nginx_proxy_cache != None %}
 {% if location.proxy_cache is defined and location.proxy_cache %}
