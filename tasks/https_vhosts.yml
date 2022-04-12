@@ -55,7 +55,7 @@
     - name: "Build NGINX SSL vhost template"
       template:
         src: default-ssl.conf.j2
-        dest: "{{ nginx_cfg_dir }}/{{ www_domain }}-ssl"
+        dest: "{{ nginx_conf_d_dir }}/{{ www_domain }}-ssl"
       notify: "restart_nginx"
 
 
