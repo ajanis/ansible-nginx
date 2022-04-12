@@ -133,7 +133,7 @@
   register: nginx_start_attempt
 
 - name: Get nginx journald logs if service does not appear to be up
-  shell: journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx.service`
+  shell: 'journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx`'
   register: nginx_journal
   when:
     - nginx_start_attempt.failed | default(false)
