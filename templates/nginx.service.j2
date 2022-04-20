@@ -1,0 +1,46 @@
+# Stop dance for nginx
+# =======================
+#
+# ExecStop sends SIGSTOP (graceful stop) to the nginx process.
+# If, after 5s (--retry QUIT/5) nginx is still running, systemd takes control
+# and sends SIGTERM (fast shutdown) to the main process.
+# After another 5s (TimeoutStopSec=5), and if nginx is alive, systemd sends
+# SIGKILL to all the remaining processes in the process group (KillMode=mixed).
+#
+# nginx signals reference doc:
+# http://nginx.org/en/docs/control.html
+#
+[Unit]
+Description=A high performance web server and a reverse proxy server
+Documentation=man:nginx(8)
+After=network.target
+
+{% if shared_storage and (data_mount_root|length > 0) %}
+
+# Ensure shared storage is mounted
+ConditionPathIsMountPoint={{ data_mount_root }}
+
+# Ensure mount is r/w
+ConditionPathIsReadWrite={{ data_mount_root }}
+
+# Require before starting and trigger reloads and stops from shared storage mount
+Requires={{ data_mount_root | regex_replace('^\\/', '') }}.mount
+
+# Reload service is mount is reloaded
+ReloadPropagatedFrom={{ data_mount_root | regex_replace('^\\/', '') }}.mount
+
+{% endif %}
+
+[Service]
+Type=forking
+PIDFile=/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on;'
+ExecStart=/usr/sbin/nginx -g 'daemon on; master_process on;'
+ExecReload=/usr/sbin/nginx -g 'daemon on; master_process on;' -s reload
+ExecStop=-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid
+TimeoutStopSec=5
+KillMode=mixed
+
+
+[Install]
+WantedBy=multi-user.target {% if shared_storage and (data_mount_root|length > 0) %}{{ data_mount_root|regex_replace('^\\/', '') }}.mount{% else %}''{% endif %}

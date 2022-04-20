@@ -80,6 +80,14 @@
         dest: "{{ nginx_base_cfg_dir }}/theme-park.conf"
       notify: "restart_nginx"
 
+    - name: customize nginx service file
+      template:
+        src: nginx.service.j2
+        dest: "{{ nginx_systemd_location }}"
+      notify: "restart_nginx"
+      tags:
+        - nginx-configure-service
+
 - import_tasks: enable_rtmp.yml
   when: nginx_enable_rtmp|default(False)
   tags:
