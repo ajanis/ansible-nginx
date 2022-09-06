@@ -242,10 +242,3 @@ fail2ban_services:
     filter: nginx-404
     port: http,https
     logpath: /var/log/nginx/*.log
-
-
-nginx_allowed_ports:
-  - "80/tcp"
-  - "443/tcp"
-
-nginx_symlinks: []
