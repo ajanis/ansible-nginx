@@ -65,5 +65,5 @@ http {
 {% endif %}
 
     include {{ nginx_conf_d_dir }}/*;
-
+    include {{ nginx_base_cfg_dir }}/sites-enabled/*;
 }
