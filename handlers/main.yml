@@ -2,7 +2,6 @@
 - name: "restart_fail2ban"
   set_fact:
     fail2ban_require_restart: True
-
 - name: "restart_nginx"
   set_fact:
     nginx_require_restart: True
