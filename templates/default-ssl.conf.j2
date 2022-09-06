@@ -1,24 +1,23 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
-{% if nginx_vhosts_ssl is defined and nginx_vhosts_ssl != None %}
-{% for vhost in nginx_vhosts_ssl %}
+
 server {
-    listen {{ vhost.serverlisten | default(nginx_https_listen) }} ssl http2;
-{% if vhost.serveralias is defined and vhost.serveralias != None %}
-    server_name {{ vhost.servername | default(nginx_default_servername) }} {{ vhost.serveralias }};
+    listen {{ item.serverlisten | default(nginx_https_listen) }} ssl http2;
+{% if item.serveralias is defined and item.serveralias != None %}
+    server_name {{ item.servername | default(nginx_default_servername) }} {{ item.serveralias }};
 {% else %}
-    server_name {{ vhost.servername | default(nginx_default_servername) }};
+    server_name {{ item.servername | default(nginx_default_servername) }};
 {% endif %}
-    ssl_certificate           {{ vhost.ssl_certpath | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
-    ssl_certificate_key       {{ vhost.ssl_keypath | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
+    ssl_certificate           {{ item.ssl_certpath | default('/etc/ssl/certs/ssl-cert-snakeoil.pem') }};
+    ssl_certificate_key       {{ item.ssl_keypath | default('/etc/ssl/privte/ssl-cert-snakeoil.key') }};
     include /etc/nginx/ssl.conf;
-    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_access.log main;
-    error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_ssl_error.log warn;
-{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
-    {{ vhost.extra_parameters|indent(4, False) }}
+    access_log      /var/log/nginx/{{ item.servername | default(nginx_default_servername) }}_ssl_access.log main;
+    error_log       /var/log/nginx/{{ item.servername | default(nginx_default_servername) }}_ssl_error.log warn;
+{% if item.extra_parameters is defined and item.extra_parameters != None %}
+    {{ item.extra_parameters|indent(4, False) }}
 {% endif %}
-{% for location in vhost.locations %}
+{% for location in item.locations %}
     location {{ location.name }} {
 {% if location.docroot is defined and location.docroot != None %}
         root {{ location.docroot|default('/') }};
@@ -47,5 +46,3 @@ server {
         }
 {% endfor %}
     }
-{% endfor %}
-{% endif %}

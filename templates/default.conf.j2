@@ -1,33 +1,20 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
-server {
 
-    listen {{ nginx_http_listen }};
-    server_name localhost;
-
-    location /nginx_status {
-        stub_status;
-        access_log off;
-        allow 127.0.0.1;
-        deny all;
-        }
-    }
-{% if nginx_vhosts is defined and nginx_vhosts != None %}
-{% for vhost in nginx_vhosts %}
 server {
-    listen {{ vhost.serverlisten | default(nginx_http_listen) }};
-{% if vhost.serveralias is defined and vhost.serveralias != None %}
-    server_name {{ vhost.servername | default(nginx_default_servername) }} {{ vhost.serveralias }};
+    listen {{ item.serverlisten | default(nginx_http_listen) }};
+{% if item.serveralias is defined and item.serveralias != None %}
+    server_name {{ item.servername | default(nginx_default_servername) }} {{ item.serveralias }};
 {% else %}
-    server_name {{ vhost.servername | default(nginx_default_servername) }};
+    server_name {{ item.servername | default(nginx_default_servername) }};
 {% endif %}
-    access_log      /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_access.log main;
-    error_log       /var/log/nginx/{{ vhost.servername | default(nginx_default_servername) }}_error.log warn;
-{% if vhost.extra_parameters is defined and vhost.extra_parameters != None %}
-    {{ vhost.extra_parameters|indent(4, False) }}
+    access_log      /var/log/nginx/{{ item.servername | default(nginx_default_servername) }}_access.log main;
+    error_log       /var/log/nginx/{{ item.servername | default(nginx_default_servername) }}_error.log warn;
+{% if item.extra_parameters is defined and item.extra_parameters != None %}
+    {{ item.extra_parameters|indent(4, False) }}
 {% endif %}
-{% for location in vhost.locations %}
+{% for location in item.locations %}
     location {{ location.name }} {
 {% if location.docroot is defined and location.docroot != None %}
         root {{ location.docroot }};
@@ -56,5 +43,4 @@ server {
         }
 {% endfor %}
     }
-{% endfor %}
-{% endif %}
+
