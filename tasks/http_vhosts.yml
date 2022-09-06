@@ -1,5 +1,16 @@
-- name: "Build NGINX vhost template"
-  template:
-    src: default.conf.j2
-    dest: "{{ nginx_conf_d_dir }}/{{ www_domain }}"
-  notify: "restart_nginx"
+    - name: "Build NGINX vhost templates"
+      template:
+        src: default.conf.j2
+        dest: "{{ nginx_base_cfg_dir }}/sites-available/{{ item.servername }}-{{ item.serverlisten|regex_search('([0-9]+)')  }}"
+      loop: "{{ nginx_vhosts }}"
+      notify: "restart_nginx"
+
+    - name: "Activate vhost"
+      file:
+        dest: "{{ nginx_base_cfg_dir }}/sites-enabled/{{ item.servername }}-{{ item.serverlisten|regex_search('([0-9]+)') }}"
+        src: "{{ nginx_base_cfg_dir }}/sites-available/{{ item.servername }}-{{ item.serverlisten|regex_search('([0-9]+)') }}"
+        state: link
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
+      loop: "{{ nginx_vhosts }}"
+      notify: "restart_nginx"
