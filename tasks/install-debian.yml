@@ -39,13 +39,6 @@
     state: latest
     update_cache: yes
 
-- name: Install NGINX Module packages
-  apt:
-    name: "{{ nginx_module_pkgs }}"
-    state: latest
-    update_cache: yes
-  when: ansible_distribution_major_version >= "18"
-
 - name: Enable NGINX service
   systemd:
     name: nginx

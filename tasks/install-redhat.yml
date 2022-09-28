@@ -3,14 +3,18 @@
     - name: Disable SELinux
       selinux:
         state: disabled
-    - name: Configure Firewalld allowed ports
-      firewalld:
-        port: "{{ item }}"
-        permanent: yes
-        immediate: yes
-        state: enabled
-      loop: "{{ nginx_allowed_ports }}"
-  when: ansible_os_family == "RedHat"
+  #   - name: Configure Firewalld allowed ports
+  #     firewalld:
+  #       port_forward:
+  #         port: "22"
+  #         proto: "tcp"
+  #         toport: "22"
+  #       permanent: yes
+  #       zone: public
+  #       immediate: yes
+  #       state: enabled
+  #     # loop: "{{ nginx_allowed_ports }}"
+  # when: ansible_os_family == "RedHat"
 
 #- name: configure upstream nginx rpm key
 #  rpm_key:
@@ -37,7 +41,14 @@
     update_cache: yes
   when: ansible_os_family == "RedHat"
 
-- name: Install nginx
+- name: Add GetPageSpeed repository
+  yum:
+    name: https://extras.getpagespeed.com/release-latest.rpm
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: "Install Nginx Packages"
   yum:
     name: "{{ nginx_pkgs }}"
     state: present
