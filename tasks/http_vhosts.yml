@@ -1,10 +1,3 @@
-- name: "Create NGINX vhost directories"
-  file:
-    path: "{{ item  }}"
-    state: directory
-  loop:
-    - "{{ nginx_base_cfg_dir }}/sites-available/"
-    - "{{ nginx_base_cfg_dir }}/sites-enabled/"
     
 - name: "Build NGINX vhost templates"
   template:
