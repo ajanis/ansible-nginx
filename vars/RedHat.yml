@@ -10,14 +10,24 @@ nginx_conf_d_dir: "{{ nginx_base_cfg_dir }}/conf.d"
 
 nginx_default_user: nginx
 nginx_default_group: nginx
-nginx_default_site:
-  - /etc/nginx/sites-enabled/default
-  - /etc/nginx/sites-available/default
-  - /etc/nginx/nginx.conf.default
-  - /etc/nginx/uwsgi_params.default
-  - /etc/nginx/mime.types.default
-  - /etc/nginx/fastcgi_params.default
-  - /etc/nginx/fastcgi.conf.default
-  - /etc/nginx/nginx.conf.rpmnew
 
+nginx_default_site:
+  - "{{ nginx_base_cfg_dir }}/sites-enabled/default"
+  - "{{ nginx_base_cfg_dir }}/sites-available/default"
+  - "{{ nginx_base_cfg_dir }}/nginx.conf.default"
+  - "{{ nginx_base_cfg_dir }}/uwsgi_params.default"
+  - "{{ nginx_base_cfg_dir }}/mime.types.default"
+  - "{{ nginx_base_cfg_dir }}/fastcgi_params.default"
+  - "{{ nginx_base_cfg_dir }}/fastcgi.conf.default"
+  - "{{ nginx_base_cfg_dir }}/nginx.conf.rpmnew"
+  - "{{ nginx_base_cfg_dir }}/modules-available"
+  - "{{ nginx_base_cfg_dir }}/modules-enabled"
+
+nginx_default_directories:
+  - "{{ nginx_base_cfg_dir }}/sites-enabled"
+  - "{{ nginx_base_cfg_dir }}/sites-available"
+  - "{{ nginx_base_cfg_dir }}/conf.d"
+  - "{{ nginx_base_cfg_dir }}/modules-enabled"
+  - "{{ nginx_base_cfg_dir }}/modules-available"
+  
 nginx_systemd_location: /etc/systemd/system/nginx.service.j2
