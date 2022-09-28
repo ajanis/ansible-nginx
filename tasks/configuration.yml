@@ -8,6 +8,7 @@
         mode: 0755
         owner: "{{ nginx_user|default(nginx_default_user) }}"
         group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
+
     - name: "Create symlinks for services like PXE"
       file:
         src: "{{ item.src }}"
@@ -21,24 +22,47 @@
   tags:
     - nginx-data-directories
 
+- name: Install NGINX Module packages
+  package:
+    name: "{{ nginx_module_pkgs }}"
+    state: latest
+    update_cache: yes
+
 - name: Remove default nginx vhosts, update nginx.conf, proxy, caching, upstream and loaded modules
   block:
-    - name: "Remove default vhost configs"
+    - name: "Remove default nginx configs"
       file:
         path: "{{ item }}"
         state: absent
       loop: "{{ nginx_default_site }}"
 
+    - name: "Create default nginx directories"
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop: "{{ nginx_default_directories }}"
+
     - name: "Build nginx.conf template"
       template:
         src: nginx.conf.j2
-        dest: /etc/nginx/nginx.conf
+        dest: "{{ nginx_base_cfg_dir }}/nginx.conf"
       notify: "restart_nginx"
 
-    - name: "Enable Modules"
+    - name: "Add Module Configs"
       template:
         src: loadmodule.conf.j2
-        dest: "/etc/nginx/modules-enabled/{{ item }}.conf"
+        dest: "{{ nginx_base_cfg_dir }}/modules-available/{{ item }}.conf"
+      loop: "{{ nginx_modules_enabled }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: "Activate Modules"
+      file:
+        src: "{{ nginx_base_cfg_dir }}/modules-available/{{ item }}.conf"
+        dest: "{{ nginx_base_cfg_dir }}/modules-enabled/{{ item }}.conf"
+        state: link
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       loop: "{{ nginx_modules_enabled }}"
       loop_control:
         label: "{{ item }}"
@@ -47,13 +71,13 @@
     - name: "Build NGINX vhost proxy template"
       template:
         src: proxy.conf.j2
-        dest: /etc/nginx/proxy.conf
+        dest: "{{ nginx_base_cfg_dir }}/proxy.conf"
       notify: "restart_nginx"
 
     - name: "Build NGINX vhost proxy-cache template"
       template:
         src: proxy-cache.conf.j2
-        dest: /etc/nginx/proxy-cache.conf
+        dest: "{{ nginx_base_cfg_dir }}/proxy-cache.conf"
       notify: "restart_nginx"
 
     - name: "Build NGINX Backend template"
