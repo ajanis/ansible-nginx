@@ -25,14 +25,13 @@
 - name: Install NGINX Module packages
   package:
     name: "{{ nginx_module_pkgs }}"
-    state: latest
-    update_cache: yes
+    state: present
 
 - name: Remove default nginx vhosts, update nginx.conf, proxy, caching, upstream and loaded modules
   block:
     - name: "Remove default nginx configs"
       file:
-        path: "{{ item }}"
+        path: "{{ item }}/*"
         state: absent
       loop: "{{ nginx_default_site }}"
 
@@ -40,18 +39,24 @@
       file:
         path: "{{ item }}"
         state: directory
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       loop: "{{ nginx_default_directories }}"
 
     - name: "Build nginx.conf template"
       template:
         src: nginx.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/nginx.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Add Module Configs"
       template:
         src: loadmodule.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/modules-available/{{ item }}.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       loop: "{{ nginx_modules_enabled }}"
       loop_control:
         label: "{{ item }}"
@@ -72,42 +77,56 @@
       template:
         src: proxy.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/proxy.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX vhost proxy-cache template"
       template:
         src: proxy-cache.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/proxy-cache.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX Backend template"
       template:
         src: upstream.conf.j2
         dest: "{{ nginx_conf_d_dir }}/upstream.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX Cache template"
       template:
         src: cache.conf.j2
         dest: "{{ nginx_conf_d_dir }}/cache.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX theme-park config template"
       template:
         src: theme-park-settings.conf.j2
         dest: "{{ nginx_conf_d_dir }}/theme-park-settings.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: "Build NGINX theme-park proxy/filter file"
       template:
         src: theme-park.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/theme-park.conf"
+        owner: "{{ nginx_user|default(nginx_default_user) }}"
+        group: "{{ nginx_group|default(nginx_default_group) }}"
       notify: "restart_nginx"
 
     - name: customize nginx service file
       template:
         src: nginx.service.j2
         dest: "{{ nginx_systemd_location }}"
+        owner: 0
+        group: 0
       notify: "restart_nginx"
       tags:
         - nginx-configure-service
