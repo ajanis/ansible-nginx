@@ -24,26 +24,30 @@
 
     - name: "Install SSL Keys for all vhosts"
       copy:
-        content: "{{ item.ssl_privkey }}"
-        dest: "{{ item.ssl_keypath }}"
+        content: "{{ ssl_privkey}}"
+        dest: "{{ ssl_keypath }}"
         owner: root
         group: root
         mode: 0640
-      loop: "{{ nginx_vhosts_ssl }}"
+      loop:
+        - "{{ nginx_vhosts_ssl|map(attribute='ssl_privkey') | list | unique }}"
+        - "{{ nginx_vhosts_ssl|map(attribute='ssl_keypath') | list | unique }}"
       loop_control:
-        label: "{{ item.ssl_keypath }}"
+        label: "{{ ssl_keypath }}"
       notify: "restart_nginx"
 
     - name: "Install SSL Certificate Chains for all vhosts"
       copy:
-        content: "{{ item.ssl_certchain }}"
-        dest: "{{ item.ssl_certpath }}"
+        content: "{{ ssl_certchain }}"
+        dest: "{{ ssl_certpath }}"
         owner: root
         group: root
         mode: 0640
-      loop: "{{ nginx_vhosts_ssl }}"
+      loop:
+        - "{{ nginx_vhosts_ssl|map(attribute='ssl_certchain') | list | unique }}"
+        - "{{ nginx_vhosts_ssl|map(attribute='ssl_certpath') | list | unique }}"
       loop_control:
-        label: "{{ item.ssl_certpath }}"
+        label: "{{ ssl_keypath }}"
       notify: "restart_nginx"
 
     - name: "Build ssl.conf template"
@@ -57,6 +61,8 @@
         src: default-ssl.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/sites-available/{{ item.servername }}-{{ item.serverlisten|regex_search('([0-9]+)') }}"
       loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.servername }}"
       notify: "restart_nginx"
 
     - name: "Activate vhost"
@@ -67,4 +73,6 @@
         owner: "{{ nginx_user|default(nginx_default_user) }}"
         group: "{{ nginx_group|default(nginx_default_group) }}"
       loop: "{{ nginx_vhosts_ssl }}"
+      loop_control:
+        label: "{{ item.servername }}"
       notify: "restart_nginx"
