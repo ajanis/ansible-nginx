@@ -28,7 +28,7 @@ nginx_default_directories:
   - "{{ nginx_base_cfg_dir }}/modules-enabled"
   - "{{ nginx_base_cfg_dir }}/modules-available"
   
-nginx_default_user: www-data
-nginx_default_group: www-data
+nginx_default_user: www-user
+nginx_default_group: www-group
 
 nginx_systemd_location: /etc/systemd/system/nginx.service.j2
