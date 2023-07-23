@@ -4,7 +4,7 @@
       slurp:
         src: "{{ ssl_key_slurp_path }}"
       register: ssl_key_contents
-      delegate_to: "{{ ssl_slurp_remote_host|default(omit) }}"
+      # delegate_to: "{{ ssl_slurp_remote_host|default(omit) }}"
       delegate_facts: true
 
     - name: set encoded ssl key contents as fact for later processing
@@ -15,7 +15,7 @@
       slurp:
         src: "{{ ssl_cert_slurp_path }}"
       register: ssl_cert_contents
-      delegate_to: "{{ ssl_slurp_remote_host|default(omit) }}"
+      # delegate_to: "{{ ssl_slurp_remote_host|default(omit) }}"
       delegate_facts: true
 
     - name: set encoded ssl cert contents as fact for later processing
