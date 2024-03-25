@@ -1,13 +1,14 @@
 - name: Configure rtmp transcode data directories
   block:
-    - name: "create camera feed transcode directory"
-      file:
+    - name: Create camera feed transcode directory
+      ansible.builtin.file:
         state: directory
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        mode: "0755"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
         dest: "{{ nginx_hls_camera_feed_transcode_dir }}"
 
-#    - name: "create camera feed index file"
+#    - name: create camera feed index file
 #      file:
 #        state: touch
 #        owner: root
@@ -16,20 +17,20 @@
 
 - name: Create transcode script and service
   block:
-    - name: "create ffmpeg transcode script"
-      template:
+    - name: Create ffmpeg transcode script
+      ansible.builtin.template:
         src: rtsp_to_rtmp_transcode.sh.j2
         dest: /usr/local/bin/rtsp_to_rtmp_transcode.sh
-        mode: 0755
-    - name: "create ffmpeg transcode service"
-      template:
+        mode: "0755"
+    - name: Create ffmpeg transcode service
+      ansible.builtin.template:
         src: ffmpeg_transcode.service.j2
         dest: /etc/systemd/system/ffmpeg_transcode.service
-        mode: 0755
+        mode: "0755"
       register: ffmpeg_transcode_service
-    - name: enable ffmpeg transcode service
-      systemd:
+    - name: Enable ffmpeg transcode service
+      ansible.builtin.systemd:
         name: ffmpeg_transcode
         state: "{% if ffmpeg_transcode_service.changed %}restarted{% else %}started{% endif %}"
-        enabled: yes
-        daemon_reload: yes
+        enabled: true
+        daemon_reload: true

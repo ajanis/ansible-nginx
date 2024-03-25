@@ -1,195 +1,211 @@
 ---
 - name: Configure nginx public_html directory
+  tags:
+    - nginx-data-directories
   block:
-    - name: "Ensure public_html directory exist"
-      file:
+    - name: Ensure public_html directory exist
+      ansible.builtin.file:
         path: "{{ nginx_default_docroot }}"
         state: directory
-        mode: 0755
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
+        mode: "0755"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) | default(nginx_default_group) }}"
 
-    - name: "Create symlinks for services like PXE"
-      file:
+    - name: Create symlinks for services like PXE
+      ansible.builtin.file:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         state: link
-        mode: 0755
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group)|default(nginx_default_group) }}"
+        mode: "0755"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) | default(nginx_default_group) }}"
       loop: "{{ nginx_symlinks }}"
       when: nginx_symlinks | length > 0
-  tags:
-    - nginx-data-directories
+
 
 - name: Install NGINX Module packages
-  package:
+  ansible.builtin.package:
     name: "{{ nginx_module_pkgs }}"
     state: present
 
 - name: Remove default nginx vhosts, update nginx.conf, proxy, caching, upstream and loaded modules
   block:
-    - name: "Remove default nginx configs"
-      file:
+    - name: Remove default nginx configs
+      ansible.builtin.file:
         path: "{{ item }}/*"
         state: absent
       loop: "{{ nginx_default_site }}"
 
-    - name: "Create default nginx directories"
-      file:
+    - name: Create default nginx directories
+      ansible.builtin.file:
+        mode: "0755"
         path: "{{ item }}"
         state: directory
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       loop: "{{ nginx_default_directories }}"
 
     - name: "Build nginx.conf template"
-      template:
+      ansible.builtin.template:
         src: nginx.conf.j2
+        mode: "0755"
         dest: "{{ nginx_base_cfg_dir }}/nginx.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Add Module Configs"
-      template:
+    - name: Add Module Configs
+      ansible.builtin.template:
         src: loadmodule.conf.j2
+        mode: "0755"
         dest: "{{ nginx_base_cfg_dir }}/modules-available/{{ item }}.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       loop: "{{ nginx_modules_enabled }}"
       loop_control:
         label: "{{ item }}"
 
-    - name: "Activate Modules"
-      file:
+    - name: Activate Modules
+      ansible.builtin.file:
         src: "{{ nginx_base_cfg_dir }}/modules-available/{{ item }}.conf"
         dest: "{{ nginx_base_cfg_dir }}/modules-enabled/{{ item }}.conf"
         state: link
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       loop: "{{ nginx_modules_enabled }}"
       loop_control:
         label: "{{ item }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX vhost proxy template"
-      template:
+    - name: Build NGINX vhost proxy template
+      ansible.builtin.template:
         src: proxy.conf.j2
+        mode: "0755"
         dest: "{{ nginx_base_cfg_dir }}/proxy.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX vhost proxy-cache template"
-      template:
+    - name: Build NGINX vhost proxy-cache template
+      ansible.builtin.template:
         src: proxy-cache.conf.j2
+        mode: "0755"
         dest: "{{ nginx_base_cfg_dir }}/proxy-cache.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX Backend template"
-      template:
+    - name: Build NGINX Backend template
+      ansible.builtin.template:
         src: upstream.conf.j2
-        dest: "{{ nginx_conf_d_dir }}/upstream.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        mode: "0755"
+        dest: "{{ nginx_conf_d_dir }}/20.upstream.conf"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX Cache template"
-      template:
+    - name: Build NGINX Cache template
+      ansible.builtin.template:
         src: cache.conf.j2
-        dest: "{{ nginx_conf_d_dir }}/cache.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        mode: "0755"
+        dest: "{{ nginx_conf_d_dir }}/10.cache.conf"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX theme-park config template"
-      template:
+    - name: Build NGINX theme-park config template
+      ansible.builtin.template:
         src: theme-park-settings.conf.j2
-        dest: "{{ nginx_conf_d_dir }}/theme-park-settings.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        mode: "0755"
+        dest: "{{ nginx_conf_d_dir }}/30.theme-park-settings.conf"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: "Build NGINX theme-park proxy/filter file"
-      template:
+    - name: Build NGINX theme-park proxy/filter file
+      ansible.builtin.template:
+        mode: "0755"
         src: theme-park.conf.j2
         dest: "{{ nginx_base_cfg_dir }}/theme-park.conf"
-        owner: "{{ nginx_user|default(nginx_default_user) }}"
-        group: "{{ nginx_group|default(nginx_default_group) }}"
+        owner: "{{ nginx_user | default(nginx_default_user) }}"
+        group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
 
-    - name: customize nginx service file
-      template:
+    - name: Customize nginx service file
+      ansible.builtin.template:
         src: nginx.service.j2
+        mode: "0755"
         dest: "{{ nginx_systemd_location }}"
         owner: 0
         group: 0
       notify: "restart_nginx"
       tags:
         - nginx-configure-service
-
-- import_tasks: enable_rtmp.yml
-  when: nginx_enable_rtmp|default(False)
+- name: Import rtmp tasks
+  ansible.builtin.import_tasks: enable_rtmp.yml
+  when: nginx_enable_rtmp | default(False)
   tags:
     - nginx-configure-rtmp
-
-- import_tasks: http_vhosts.yml
+- name: Import vhost tasks
+  ansible.builtin.import_tasks: http_vhosts.yml
   when:
-    -  ( nginx_vhosts | length > 0 ) | default('[]')
+    - ( nginx_vhosts | length > 0 ) | default('[]')
   tags:
     - nginx-vhost-config
-
-- import_tasks: ssl_slurp.yml
+- name: Import SSL Slurp tasks
+  ansible.builtin.import_tasks: ssl_slurp.yml
   when:
-    - slurp_ssl_keys_from_remote|default(False)
-    - ssl_slurp_remote_host|length > 0
-    - ssl_cert_slurp_path|length > 0
-    - ssl_key_slurp_path|length > 0
+    - slurp_ssl_keys_from_remote | default(False)
+    - ssl_slurp_remote_host | length > 0
+    - ssl_cert_slurp_path | length > 0
+    - ssl_key_slurp_path | length > 0
   tags:
     - nginx-ssl-slurp
-
-- import_tasks: https_vhosts.yml
+- name: Import vhost tasks
+  ansible.builtin.import_tasks: https_vhosts.yml
   when:
     - ( nginx_vhosts_ssl | length > 0 ) | default('[]')
   tags:
     - nginx-ssl-config
 
-
-- meta: flush_handlers
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Restart the nginx service if any configuration files have changed
-  systemd:
+  ansible.builtin.systemd:
     name: nginx
     state: |-
-      {%- if nginx_require_restart|default(False) -%}
+      {%- if nginx_require_restart | default(False) -%}
       restarted
       {%- else -%}
       started
       {%- endif -%}
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
   register: nginx_restarted
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Verify the nginx service is listening
-  wait_for:
+  ansible.builtin.wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: "{{ nginx_http_listen }}"
     delay: 5
     timeout: 30
-  ignore_errors: yes
+  ignore_errors: true
   register: nginx_start_attempt
 
 - name: Get nginx journald logs if service does not appear to be up
-  shell: 'journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx`'
+  ansible.builtin.command:
+    cmd: 'journalctl _SYSTEMD_INVOCATION_ID=`systemctl show -p InvocationID --value nginx`'
   register: nginx_journal
+  changed_when:
+    - nginx_start_attempt is changed
+    - nginx_journal is changed
   when:
     - nginx_start_attempt.failed | default(false)
 
-- debug:
+- name: Print nginx journald
+  ansible.builtin.debug:
     msg: "{{ nginx_journal.stdout_lines }}"
   when:
     - nginx_start_attempt.failed | default(false)

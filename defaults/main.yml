@@ -1,5 +1,5 @@
 ---
-slurp_ssl_keys_from_remote: False
+slurp_ssl_keys_from_remote: false
 ssl_slurp_remote_host:
 ssl_cert_slurp_path:
 ssl_key_slurp_path:
@@ -25,16 +25,37 @@ nginx_gzip_min_length: "1000"
 nginx_gzip_comp_level: "6"
 nginx_gzip_buffers: "32 8k"
 
-nginx_log_format_main: |
-  '$remote_addr - $remote_user [$time_local] '
-  '$host "$request" $status $body_bytes_sent '
-  '"$http_referer" "$http_user_agent" '
-  '$request_time $upstream_connect_time $http_x_forwarded_for $upstream_cache_status';
-
 nginx_access_log: "/var/log/nginx/access.log  main"
 
+nginx_log_format_main: |
+    log_format main escape=json '{'
+        '"time_local":"$time_local",'
+        '"remote_addr": "$remote_addr",'                            # client IP
+        '"request":"$request",'                                     # full path no arguments if the request
+        '"status": "$status",'                                      # response status code
+        '"request_time":"$request_time",'                           # request processing time in seconds with msec resolution
+        '"remote_user": "$remote_user",'                            # client HTTP username
+        '"remote_port": "$remote_port",'                            # client port
+        '"body_bytes_sent": "$body_bytes_sent",'                    # the number of body bytes exclude headers sent to a client
+        '"bytes_sent": "$bytes_sent", '                             # the number of bytes sent to a client
+        '"request_length": "$request_length", '                     # request length (including headers and body)
+        '"connection_requests": "$connection_requests",'            # number of requests made in connection
+        '"http_host": "$http_host", '                               # the request Host: header
+        '"http_referrer":"$http_referer",'
+        '"upstream": "$upstream_addr", '                            # upstream backend server for proxied requests
+        '"upstream_connect_time": "$upstream_connect_time", '       # upstream handshake time incl. TLS
+        '"upstream_header_time": "$upstream_header_time", '         # time spent receiving upstream headers
+        '"upstream_response_time": "$upstream_response_time", '     # time spend receiving upstream body
+        '"upstream_response_length": "$upstream_response_length", ' # upstream response length
+        '"upstream_cache_status": "$upstream_cache_status", '       # cache HIT/MISS where applicable
+        '"ssl_protocol": "$ssl_protocol", '                         # TLS protocol
+        '"ssl_cipher": "$ssl_cipher", '                             # TLS cipher
+        '"scheme": "$scheme", '                                     # http or https
+        '"http_user_agent":"$http_user_agent"'
+    '}';
 
-nginx_enable_rtmp: False
+
+nginx_enable_rtmp: false
 nginx_rtmp_listen_port: 1935
 nginx_rtsp_transport_proto: tcp
 nginx_rtsp_camera_feed: 'rtsp://camera_ip:7447/stream1'
@@ -84,7 +105,7 @@ nginx_client_max_body_size: "0"
 nginx_client_header_buffer_size: "4k"
 nginx_client_header_timeout: "180s"
 
-nginx_proxy_cache_enabled: True
+nginx_proxy_cache_enabled: true
 nginx_proxy_cache: "nginx-cache"
 nginx_proxy_cache_path: "/tmp/{{ nginx_proxy_cache }}"
 nginx_proxy_cache_key: '$scheme$host$proxy_host$request_uri'
@@ -121,7 +142,7 @@ nginx_keepalive_timeout: "300s"
 
 
 nginx_vhosts:
-  - servername: localhost;
+  - servername: 127.0.0.1;
     serverlisten: 80;
     locations:
       - name: /nginx_status
@@ -150,12 +171,6 @@ nginx_vhosts_ssl: []
 #        docroot: "{{ data_mount_root }}/{{ www_directory }}"
 
 
-# The following Grok patterns can be used to parse the above-defined nginx 'main' access log format and the default fail2ban.log file
-
-nginx_accesslog_grokpattern: '%{CLIENT:client_ip} - %{NOTSPACE:ident} \[%{HTTPDATE:ts:ts-httpd}\] %{NOTSPACE:request_host:tag} "(?:%{WORD:verb:tag} %{NOTSPACE:request} (?:HTTP/%{NUMBER:http_version:float})?|%{DATA})" %{NUMBER:resp_code:tag} (?:%{NUMBER:resp_bytes:int}|-) "%{NOTSPACE:referrer}" "%{DATA:agent:tag}" (?:%{NUMBER:request_time}|-) (?:%{NUMBER:upstream_connect_time}|-) %{NOTSPACE:x_forwarded_for} %{NOTSPACE:upstream_cache_status:tag}'
-
-
-
 nginx_allowed_ports:
   - "80/tcp"
   - "443/tcp"
@@ -165,10 +180,7 @@ nginx_allowed_ports:
 
 nginx_symlinks: []
 
-fail2ban_banlog_grokpattern: '%{TIMESTAMP_ISO8601:timestamp} %{WORD:log_src}.%{WORD:src_action} *\[%{INT:fail2ban_digit}\]: %{WORD:loglevel:tag} *\[%{NOTSPACE:service:tag}\] %{GREEDYDATA:ban_status:tag} %{IP:clientip:tag}'
-
-
-fail2ban_enable: False
+fail2ban_enable: false
 
 fail2ban_loglevel: INFO
 fail2ban_logtarget: SYSLOG
@@ -189,26 +201,24 @@ fail2ban_usedns: "warn"
 fail2ban_destemail: root@localhost
 
 fail2ban_banaction: iptables-multiport
-#fail2ban_banaction: pfsense
-#fail2ban_banaction: urltable
+# fail2ban_banaction: pfsense
+# fail2ban_banaction: urltable
 
 # Custom PFSense pfSSH Ban Action
 
 # Set these variables if using pfsense Ban Action
-#fail2ban_pfsense_ip:
-#fail2ban_pfsense_user:
-#fail2ban_ssh_private_key:
+# fail2ban_pfsense_ip:
+# fail2ban_pfsense_user:
+# fail2ban_ssh_private_key:
 
 # Custom PFSense URLTable Ban Action
-#fail2ban_banaction: urltable
+# fail2ban_banaction: urltable
 
 # Set these variables if using URLTable Ban Action
-#fail2ban_pfsense_ip:
-#fail2ban_pfsense_user:
-#fail2ban_ssh_private_key:
-#fail2ban_urltable_file:
-
-
+# fail2ban_pfsense_ip:
+# fail2ban_pfsense_user:
+# fail2ban_ssh_private_key:
+# fail2ban_urltable_file:
 
 fail2ban_mta: sendmail
 fail2ban_protocol: tcp
@@ -216,32 +226,32 @@ fail2ban_chain: '<known/chain>'
 fail2ban_action: '%(action_)s'
 fail2ban_services:
   - name: nginx-http-auth
-    enabled: True
+    enabled: true
     filter: nginx-http-auth
     port: http,https
     logpath: /var/log/nginx/*.log
   - name: nginx-noscript
-    enabled: True
+    enabled: true
     filter: nginx-noscript
     port: http,https
     logpath: /var/log/nginx/*.log
   - name: nginx-badbots
-    enabled: True
+    enabled: true
     filter: nginx-badbots
     port: http,https
     logpath: /var/log/nginx/*.log
   - name: nginx-botsearch
-    enabled: True
+    enabled: true
     filter: nginx-botsearch
     port: http,https
     logpath: /var/log/nginx/*.log
   - name: nginx-nohome
-    enabled: True
+    enabled: true
     filter: nginx-nohome
     port: http,https
     logpath: /var/log/nginx/*.log
   - name: nginx-404
-    enabled: True
+    enabled: true
     filter: nginx-404
     port: http,https
     logpath: /var/log/nginx/*.log

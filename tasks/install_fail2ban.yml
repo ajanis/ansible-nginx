@@ -1,12 +1,13 @@
 ---
+# ansible-lintno-handler
 - name: "[FAIL2BAN] :: Install Fail2Ban"
-  package:
+  ansible.builtin.package:
     name: fail2ban
     state: present
   register: fail2ban_installed
 
 - name: "[FAIL2BAN] :: Start / Enable fail2ban"
-  service:
+  ansible.builtin.service:
     name: fail2ban
     state: started
     enabled: true
