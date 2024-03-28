@@ -99,7 +99,7 @@
       ansible.builtin.template:
         src: upstream.conf.j2
         mode: "0755"
-        dest: "{{ nginx_conf_d_dir }}/20.upstream.conf"
+        dest: "{{ nginx_conf_d_dir }}/04-upstream.conf"
         owner: "{{ nginx_user | default(nginx_default_user) }}"
         group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
@@ -108,7 +108,7 @@
       ansible.builtin.template:
         src: cache.conf.j2
         mode: "0755"
-        dest: "{{ nginx_conf_d_dir }}/10.cache.conf"
+        dest: "{{ nginx_conf_d_dir }}/01-cache.conf"
         owner: "{{ nginx_user | default(nginx_default_user) }}"
         group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
@@ -117,7 +117,7 @@
       ansible.builtin.template:
         src: theme-park-settings.conf.j2
         mode: "0755"
-        dest: "{{ nginx_conf_d_dir }}/30.theme-park-settings.conf"
+        dest: "{{ nginx_conf_d_dir }}/03-theme-park-settings.conf"
         owner: "{{ nginx_user | default(nginx_default_user) }}"
         group: "{{ nginx_group | default(nginx_default_group) }}"
       notify: "restart_nginx"
